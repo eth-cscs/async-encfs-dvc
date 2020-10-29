@@ -1,0 +1,6 @@
+[core]
+    analytics = false
+    remote = pollux
+['remote "pollux"']
+    url = s3://hpc-predict-pollux-test
+    endpointurl = https://object.cscs.ch
