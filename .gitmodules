@@ -1,0 +1,3 @@
+[submodule "openstack"]
+	path = openstack
+	url = git@github.com:eth-cscs/openstack.git
