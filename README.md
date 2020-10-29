@@ -5,11 +5,7 @@ Set up the repository with
 ```
 ./setup.sh
 ```
-Note that currently you have to perform the following steps manually:
-
- * apply Openstack Swift patch to dvc/tree/s3.py as in https://stackoverflow.com/a/60566758
-   i.e. insert `config=botocore.client.Config(signature_version='s3')` as a parameter to 
-   `session.resource()` call in line 80 dvc/tree/s3.py of `dvc[s3]==1.9.1`
+An Openstack Swift patch is applied to dvc/tree/s3.py as in https://stackoverflow.com/a/60566758 during the setup, i.e. `config=botocore.client.Config(signature_version='s3')` is added as a parameter to `session.resource()` call in line 80 dvc/tree/s3.py of `dvc[s3]==1.9.1`.
 
 If you're the creator of this repo, run `mkdir data && cd data && dvc init --subdir`. You can disable DVC analytics with `dvc config core.analytics false`.
 

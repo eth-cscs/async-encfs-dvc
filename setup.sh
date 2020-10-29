@@ -16,7 +16,9 @@ pip install python-openstackclient lxml oauthlib python-swiftclient python-heatc
 echo "Installing DVC"
 pip install dvc[s3]
 
-# TODO: apply Openstack patch to dvc/tree/s3.py as in https://stackoverflow.com/a/60566758
-#       i.e. insert config=botocore.client.Config(signature_version='s3') as a parameter to 
-#       `session.resource()` call in line 80 dvc/tree/s3.py of dvc[s3]==1.9.1
+# Apply Openstack patch to dvc/tree/s3.py as in https://stackoverflow.com/a/60566758
+# i.e. insert config=botocore.client.Config(signature_version='s3') as a parameter to 
+# session.resource()` call in line 80 dvc/tree/s3.py of dvc[s3]==1.9.1
+patch venv/lib/python*/site-packages/dvc/tree/s3.py dvc_191_openstack_patch.patch
+
 echo "Run 'source venv/bin/activate' to use the virtual environment with the openstack client and DVC"
