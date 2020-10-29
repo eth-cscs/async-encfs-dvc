@@ -1,0 +1,20 @@
+--- venv/lib/python3.8/site-packages/dvc/tree/s3.py	2020-10-29 20:44:52.582913398 +0100
++++ ../pollux-test/venv/lib/python3.8/site-packages/dvc/tree/s3.py	2020-10-29 20:06:49.307521312 +0100
+@@ -63,6 +63,7 @@
+     @cached_property
+     def s3(self):
+         import boto3
++        import botocore
+ 
+         session_opts = {
+             "profile_name": self.profile,
+@@ -77,7 +78,8 @@
+         session = boto3.session.Session(**session_opts)
+ 
+         return session.resource(
+-            "s3", endpoint_url=self.endpoint_url, use_ssl=self.use_ssl
++            "s3", endpoint_url=self.endpoint_url, use_ssl=self.use_ssl,
++            config=botocore.client.Config(signature_version='s3')
+         )
+ 
+     @contextmanager
