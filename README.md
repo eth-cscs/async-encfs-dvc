@@ -15,9 +15,14 @@ A side-remark for DVC version 1 (no longer applies to 2.9.4): The Openstack Swif
 
 ## Generate access credentials for the OpenStack Swift object storage
 
-Every new user of the repo first needs to create S3 access credentials for DVC with
+
+Every new user of the repo first needs to create S3 access credentials for DVC. First, set up an openstack CLI environment for Castor with
 ```shell
-openstack ec2 credentials create
+source openstack/cli/castor.env
+```
+You will need to log in and specify your project. Then you can create EC2 credentials using
+```shell
+openstack ec2 credentials create --project <project-name/ID>
 ```
 and put them in `~/.aws/credentials` as described in the [boto3 docs](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials), i.e. `access` and `secret` into
 ```shell
@@ -25,6 +30,7 @@ and put them in `~/.aws/credentials` as described in the [boto3 docs](https://bo
 aws_access_key_id=<openstack-access>
 aws_secret_access_key=<openstack-secret>
 ```
+If you already have different credentials as a default, add them in another block with a different AWS profile name.
 
 ## Setting up a subdirectory in which you track your experiments
 
@@ -46,10 +52,15 @@ according to [this](https://user.cscs.ch/storage/object_storage/) and  [this](ht
 [core]
     analytics = false
     remote = castor
-['remote "pollux"']
+['remote "castor"']
     url = s3://hpc-predict-castor-test
     endpointurl = https://object.cscs.ch
 ```
+If you've put the newly created AWS credentials under a non-default AWS profile above, then you need to change the profile DVC uses accordingly with,
+```
+dvc remote modify castor profile <aws-profile-name>
+```
+Further configuration options can be obtained either from [this discussion](https://github.com/iterative/dvc/issues/1029#issuecomment-414837587) or directly from the source code.
 
 You can now run `pip freeze > requirements.txt` and commit the new DVC remote setup to Git with
 ```shell
@@ -67,7 +78,8 @@ and will have a working DVC setup.
 
 ## Using DVC to track results in scientific workflows
 
-For a tutorial on data versioning in DVC stages, consult the [documentation](https://dvc.org/doc/use-cases/versioning-data-and-model-files/tutorial#automating-capturing) on `dvc run`.
+For a tutorial on data versioning in DVC stages, consult the [documentation](https://dvc.org/doc/use-cases/versioning-data-and-model-files/tutorial#automating-capturing) on `dvc run`. Note that to version an application's output with the code that was used to produce it we recommend using Git-SHA-tagged container images in the command you supply to `dvc run`. This automatically catches all code-dependencies and makes DVC stages fully re-executable. This is in contrast to the documentation, i.e. we do not to track code dependencies with the `-d` option in `dvc run`, we reserve this option for input data dependencies of the DVC stage.
+
 
 Some additional considerations
 * Systematically structuring experiments into folders can help to keep an overview. Consider e.g.
@@ -76,5 +88,6 @@ Some additional considerations
   + ...
   + \<appN\>
   + output/\<target_format\> 
-* When building a workflow, you need to manage your application data protocols yourself (i.e. in the code, with its own versioning, DVC doesn't have a concept for application protocols only of dependencies between files)
+* When building a workflow, you need to manage your application data protocols yourself (i.e. in the code, with its own versioning)
+  + DVC doesn't have a concept for application protocols, but only of dependencies between files
 
