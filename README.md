@@ -23,8 +23,9 @@ source openstack/cli/castor.env
 You will need to log in and specify your project. Then you can create EC2 credentials using
 ```shell
 openstack ec2 credentials create --project <project-name/ID>
+openstack ec2 credentials list
 ```
-and put them in `~/.aws/credentials` as described in the [boto3 docs](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials), i.e. `access` and `secret` into
+and put them in `~/.aws/credentials` as described in the [boto3 docs](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials), i.e. `Access` and `Secret` into
 ```shell
 [default]
 aws_access_key_id=<openstack-access>
