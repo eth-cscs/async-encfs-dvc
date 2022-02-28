@@ -33,47 +33,71 @@ Here, `<aws-profile-name>` is a placeholder - it is suggested that you use the n
 
 ## Setting up a subdirectory in which you track your experiments
 
-The following steps only have to be performed once per project. To set up a subdirectory in `data` for tracking experiments, run 
+The following steps only have to be performed once per project. To set up a subdirectory in `data/v0` (the second level for versioning) for tracking experiments, run 
 
 ```shell
-mkdir data && cd data && dvc init --subdir
+mkdir -p data/v0 && cd data/v0 && dvc init --subdir
+dvc config core.analytics false
 ```
-You'll now have an empty directory, whose contents are tracked by DVC, but not yet synchronized with any remote storage. If you prefer it, you can disable DVC analytics with `dvc config core.analytics false`.
+You'll now have an empty directory, whose contents are tracked by DVC, but not yet synchronized with any remote storage. The second step disables DVC analytics and is optional. Now, create an object storage container on `castor.cscs.ch` under the appropriate project to mirror the contents of the `data/v0` directory (e.g. use `<app-name-data-v0>`).
 
-Configure your remote with 
+Then, configure your remote with 
 ```shell
 dvc remote add --default --verbose castor s3://<name-of-your-castor-bucket>
 dvc remote modify --verbose castor endpointurl https://object.cscs.ch
+dvc remote modify --verbose castor profile <aws-profile-name>
 ```
-according to [this](https://user.cscs.ch/storage/object_storage/) and  [this](https://user.cscs.ch/storage/object_storage/usage_examples/boto/). The `.dvc/config` may look like this
+according to [this](https://user.cscs.ch/storage/object_storage/) and  [this](https://user.cscs.ch/storage/object_storage/usage_examples/boto/). The third command is necessary if you've put the newly created AWS credentials under a non-`default` AWS profile above (suggestion is to use that on castor.cscs.ch).
+
+The `.dvc/config` may look like this
 
 ```shell
 [core]
     analytics = false
     remote = castor
 ['remote "castor"']
-    url = s3://hpc-predict-castor-test
+    url = s3://<name-of-your-castor-bucket>
     endpointurl = https://object.cscs.ch
+    profile = <aws-profile-name>
 ```
-If you've put the newly created AWS credentials under a non-`default` AWS profile above (suggestion: use that on castor.cscs.ch), then you need to change the profile DVC uses accordingly with,
-```
-dvc remote modify castor profile <aws-profile-name>
-```
-Further configuration options can be obtained either from [this discussion](https://github.com/iterative/dvc/issues/1029#issuecomment-414837587) or directly from the source code.
 
-You can now run `pip freeze > requirements.txt` and commit the new DVC remote setup to Git with
+Further configuration options can be obtained either from [this discussion](https://github.com/iterative/dvc/issues/1029#issuecomment-414837587) or directly from the source code. You can then commit the newly set up DVC environment to Git with
+
 ```shell
-git commit .dvc/config requirements.txt -m "Added <name-of-your-castor-bucket> on Castor as a new DVC remote"
+git commit .dvc/config -m "Added data/v0 as a new DVC-tracked subdirectory with <name-of-your-castor-bucket> S3 bucket on Castor as a remote"
 ```
-When you `git push` this commit, you'll be able to `git clone` it elsewhere, set up the python virtual environment 
+When you `git push` this commit, you'll be able to `git clone` the repo on another machine, set up the python virtual environment as in
+
 ```shell
-cd data
+cd data/v0
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install dvc[s3]
 ```
-(or simply `pip install dvc[s3]` as the last command) and will have a working DVC setup. 
+and will have a working DVC setup (e.g. using `dvc pull <target-name>` will pull files from Castor).
+
+If you would like to regenerate the exact same Python environment on all machines, you can use `pip freeze > requirements.txt` on the first one, commit this along with the `.dvc/config` and replace `pip install dvc[s3]` above by running `pip install -r requirements.txt` on all others. An alternative is to use a fixed version of DVC as in `pip install dvc[s3]==X.Y.Z`.
+
+
+## Further S3 configuration
+
+Depending on your requirements (file sizes, etc.), you may find that you need to configure the S3 transfers appropriately, cf. the "S3 Custom command settings" available in the [AWS_CONFIG_FILE](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html). As an example, the following configuration will increase the maximum transferable file size to 128 GB,
+
+```
+[profile <aws-profile-name>]
+s3 =
+  multipart_threshold = 256MB
+  multipart_chunksize = 128MB
+```
+
+This configuration can be stored under `$(dvc root)/.aws_config` and needs to be available to dvc as an environment variable, i.e. run
+
+```shell
+export AWS_CONFIG_FILE=$(realpath $(dvc root)/.aws_config)
+```
+
+from within `data/v0`.
 
 ## Using DVC stages to track results in scientific workflows
 
@@ -92,7 +116,7 @@ Some additional considerations
 
 ### Using environment variables in DVC stages
 
-A note on the use of environment variables in DVC stages. DVC version 2 interprets `${MY_VAR}` expressions in command or data dependencies of DVC stages as DVC parameters, so this syntax cannot be used to access shell environment variables or similar. If you don't need DVC parameters, but want shell environment variables to show up in DVC stage definitions (i.e. `dvc.yaml`), you can modify the [`KEYCRE` variable](https://github.com/iterative/dvc/blob/main/dvc/parsing/interpolate.py#L23) in the string interpolation of DVC's parsing module to e.g.
+A note on the use of environment variables in DVC stages. DVC version 2 interprets `${MY_VAR}` expressions in command or data dependencies of DVC stages as DVC parameters, so this syntax cannot be used to access shell environment variables or similar. If you don't need DVC parameters (or tolerate a top-level `DVC_` prefix to all of them), but want shell environment variables to show up in DVC stage definitions (i.e. `dvc.yaml`), you can modify the [`KEYCRE` variable](https://github.com/iterative/dvc/blob/main/dvc/parsing/interpolate.py#L23) in the string interpolation of DVC's parsing module to e.g.
 ```python
 KEYCRE = re.compile(
     r"""
@@ -104,4 +128,4 @@ KEYCRE = re.compile(
     re.VERBOSE,
 )
 ```
-so that only variables starting with `DVC_` (e.g. `${DVC_MY_VAR}`) get expanded with DVC parameters. This change can be done manually in the virtual environment after DVC has been successfully installed.
+so that only variables starting with `DVC_` (e.g. `${DVC_MY_VAR}`) get expanded with DVC parameters. This change can be done manually in the virtual environment after DVC has been successfully installed. Once further changes are required, a fork of DVC will be created.
