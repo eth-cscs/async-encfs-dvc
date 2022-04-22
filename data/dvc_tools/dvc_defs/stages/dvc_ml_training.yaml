@@ -1,0 +1,20 @@
+# A generic ML-training stage
+# All values are interpreted as paths relative to the host/container data (encfs) mount point
+
+# TODO: stage for continuing training from a saved checkpoint (this will be ml_training_from_scratch_stage,
+#  other ml_training_from_scratch_stage and that one will use modified commandline-params)
+ml_training_stage:
+  input:  # input data dependencies
+    training:  # stage_data is relative to mount data point
+      stage_data: &input_training_data [*training_input_app_name, *training_input_app_stage, "{{input_training}}/output"]
+      command_line_options:  # for training.sh, which sets up container environment and ends with "exec python3 training.py $@"
+        --training-input: [*input_training_data, "{{input_training_file or ''}}"]
+
+  # change the following to a different input if not first stage in pipeline
+  output:  # output data
+    training:
+      stage_data: &output_training [*app_name, training, "{{run_label}}/output"]
+      command_line_options:  # for training.sh, which sets up container environment and ends with "exec python3 training.py $@"
+        --training-output: *output_training
+
+  dvc: [*output_training, ".."]  # dvc.yaml storage location

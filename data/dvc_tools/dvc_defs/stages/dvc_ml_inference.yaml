@@ -1,0 +1,22 @@
+# A generic ML-inference stage
+# All values are interpreted as paths relative to the host/container data (encfs) mount point
+
+ml_inference_stage:
+  input:  # input data dependencies
+    training:  # stage_data is relative to mount data point
+      stage_data: &input_trained_model [*app_name, training, "{{input_training}}/output"]
+      command_line_options:  # for inference.sh, which sets up container environment and ends with "exec python3 inference.py $@"
+        --training-output: [*input_trained_model, "{{input_training_file or ''}}"]
+    # change the following to a different input if not first stage in pipeline
+    inference:
+      stage_data: &input_inference [*inference_input_app_name, *inference_input_app_stage, "{{input_inference}}/output"]
+      command_line_options:  # for inference.sh, which sets up container environment and ends with "exec python3 inference.py $@"
+        --inference-input: [ *input_inference, "{{input_inference_file or ''}}" ]
+
+  output:  # output data
+    inference:
+      stage_data: &output_inference [*app_name, inference, "{{run_label}}/output"]
+      command_line_options:  # for inference.sh, which sets up container environment and ends with "exec python3 inference.py $@"
+        --inference-output: *output_inference
+
+  dvc: [*output_inference, ".."]  # dvc.yaml storage location

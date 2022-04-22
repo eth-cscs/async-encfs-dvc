@@ -1,0 +1,13 @@
+--- venv/lib/python3.8/site-packages/dvc/parsing/interpolate.py	2022-04-13 18:39:14.973141518 +0200
++++ venv/lib/python3.8/site-packages/dvc/parsing/interpolate.py.new	2022-04-13 18:45:26.848516118 +0200
+@@ -23,8 +23,8 @@
+ KEYCRE = re.compile(
+     r"""
+     (?<!\\)                            # escape \${}
+-    \${                                # starts with ${
+-    (?P<inner>.*?)                     # match every char inside
++    \${                                # starts with ${dvc_
++    (?P<inner>dvc_.*?)                 # match every char inside
+     }                                  # end with {
+ """,
+     re.VERBOSE,

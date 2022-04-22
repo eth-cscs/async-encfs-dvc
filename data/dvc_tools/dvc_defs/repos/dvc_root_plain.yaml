@@ -1,0 +1,10 @@
+# DVC repo configuration without encryption
+
+host_data:
+  dvc_root: &dvc_root_host ../../../demo_plain # output of `dvc root` in any subdirectory of this dir
+  dvc_config: &dvc_config_host .
+  mount:  # relative to dvc_root_host
+    data:
+      type: plain
+      origin: &mount_data_host .
+

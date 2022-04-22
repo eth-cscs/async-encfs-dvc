@@ -1,0 +1,50 @@
+# app_sim version 1 app-description for DVC stage generation
+
+app:
+  name: &app_name app_sim/v1  # apps should always be versioned
+  container_engine: sarus  # can be none, docker or sarus (container_data only takes effect for the latter two)
+#  container_opts:
+#    '--mpi': ''  # required when using MPI inside Sarus containers
+  image: load/castor-dvc/app_sim # container image to use, e.g. ubuntu:20.04 (only takes effect if container_engine != none)
+  code_root: &code_root /src/app #"\\$(git rev-parse --show-toplevel)/app_sim" # /src/app # absolute path or "\\$(git rev-parse --show-toplevel)" with container_engine == none
+
+  stages: # app-specific stages
+    simulation:
+      type: simulation_stage
+      input_app: # parameterizes stage
+        name: &simulation_input_app_name app_sim/v1
+        stage: &simulation_input_app_stage simulation
+#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_opts:
+#        -np: 2
+      slurm_opts:
+        stage:
+          --nodes: 8
+          --ntasks: 16
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: 00:15:00
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: 00:60:00
+        all:
+          --account: csstaff
+      script: [*code_root, simulation.sh] 
+      # for script simulation.sh (sets up container environment and forwards it to "exec python3 simulation.py $@")
+      # (note that these options are not processed w.r.t. dvc_root_host)
+      extra_command_line_options:
+        --simulation-output-file-num-per-rank: "{{ simulation_output_file_num_per_rank }}"
+        --simulation-output-file-size: "{{ simulation_output_file_size }}"
+
+
+container_data:  # takes only effect if container_engine is not 'none'
+  mount:  # absolute path in container (mount target for data - either plain or encfs)
+    data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host if desired
+
+
+# include dvc-root/mounts and stage type information
+include:
+  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml'  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
+  simulation_stage: '../data/dvc_tools/dvc_defs/stages/dvc_simulation.yaml'
+

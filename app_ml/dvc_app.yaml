@@ -1,0 +1,77 @@
+# app_ml version 2 app-description for DVC stage generation
+
+app:
+  name: &app_name app_ml/v2  # apps should always be versioned
+  container_engine: none # can be none, docker or sarus (container_data only takes effect for the latter two)
+#  container_opts:
+#    '--gpus': '' # GPU-support for docker
+#    '--mpi': ''  # required when using MPI inside Sarus containers
+  image: app_ml # container image to use, e.g. ubuntu:20.04 (only takes effect if container_engine != none)
+  code_root: &code_root "\\$(git rev-parse --show-toplevel)/app_ml"  # /src/app # absolute path or "\\$(git rev-parse --show-toplevel)" with container_engine == none
+
+  stages: # app-specific stages
+    inference:
+      type: ml_inference_stage # refers to included stage definition
+      input_app: # parameterizes stage
+        name: &inference_input_app_name input_data/preprocessed/app_ml_etl/v2
+        stage: &inference_input_app_stage inference
+#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_opts:
+#        -np: 1
+      slurm_opts:
+        stage:
+          --nodes: 1
+          --ntasks: 1
+          --constraint: gpu
+          --time: 00:01:00
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: 00:01:00
+        all:
+          --account: csstaff
+      script: [*code_root, inference.sh]
+      # for script inference.sh (sets up container environment and forwards it to "exec python3 inference.py $@")
+      # (note that these options are not processed w.r.t. dvc_root_host)
+      extra_command_line_options:
+        --config: [*code_root, "config/{debugModel.json,debugReconFlow.json}"] # code dependency, could already be in the script
+
+    training:
+      type: ml_training_stage
+      input_app: # parameterizes stage
+        name: &training_input_app_name input_data/preprocessed/app_ml_etl/v2
+        stage: &training_input_app_stage training
+#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_opts:
+#        -np: 2
+      slurm_opts:
+        stage:
+          --nodes: 2
+          --ntasks: 4
+          --constraint: gpu
+          --time: 00:01:00
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: 00:01:00
+        all:
+          --account: csstaff
+      script: [*code_root, training.sh]
+      # for script training.sh (sets up container environment and forwards it to "exec python3 training.py $@")
+      # (note that these options are not processed w.r.t. dvc_root_host)
+      extra_command_line_options:
+        --checkpoint: model_checkpoint
+        --config: [*code_root, "config/{debugModel.json,debugPerformTraining.json}"]  # code dependency, could already be in script
+
+
+container_data:  # takes only effect if container_engine is not 'none'
+  mount:  # absolute path in container (mount target for data - either plain or encfs)
+    data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host if desired
+
+
+# include dvc-root/mounts and stage type information
+include:
+  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml'  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
+  ml_inference_stage: '../data/dvc_tools/dvc_defs/stages/dvc_ml_inference.yaml'
+  ml_training_stage: '../data/dvc_tools/dvc_defs/stages/dvc_ml_training.yaml'
+

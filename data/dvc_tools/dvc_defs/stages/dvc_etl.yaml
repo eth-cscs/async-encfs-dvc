@@ -1,0 +1,17 @@
+# A generic extract-transform-load stage converting external input data to internal format
+# All values are interpreted as paths relative to the host/container data (encfs) mount point
+
+etl_stage:  # maybe use a different layout, moving original and preprocessed past *etl_input_app_name
+  input:  # input data dependencies
+    etl:
+      stage_data: &input_etl_data [input_data/original, *etl_input_app_name, "{{input_etl}}/output"]
+      command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
+        --etl-input: [*input_etl_data, "{{input_etl_file}}"]
+
+  output:  # output data
+    etl:
+      stage_data: &output_etl [input_data/preprocessed, *etl_input_app_name, *app_name, "{{run_label}}/output"]
+      command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
+        --etl-output: *output_etl
+
+  dvc: [*output_etl, ".."]
