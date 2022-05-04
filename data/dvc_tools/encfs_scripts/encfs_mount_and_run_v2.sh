@@ -92,7 +92,7 @@ LOG_FILE="${LOG_FILE/\{MPI_RANK\}/"${MPI_RANK}"}"
 
 if [[ ${MPI_LOCAL_RANK} == 0 ]]; then
     log "Rank ${MPI_RANK} on $(hostname): Running encfs-mount at ${MOUNT_DIR}."
-    mount | grep "${MOUNT_DIR}" && "${ENCFS_BIN}" -u "${MOUNT_DIR}" && sleep 3 # should never be needed
+    mount | grep "${MOUNT_DIR}" && "${ENCFS_BIN}" -u "${MOUNT_DIR}" && sleep 3  # clean up potentially incompletely unmounted dir from previous crash
     ls_encfs_root=$(ls -lh "${ENCFS_ROOT}")
     log "${ls_encfs_root}"
     rm -Rf "${MOUNT_DIR}"
