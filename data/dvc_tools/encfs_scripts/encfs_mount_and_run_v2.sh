@@ -143,6 +143,10 @@ else
     while ! flock --nonblock ${ENCFS_LOCAL_SYNC_FILE}.lock -c "echo ${MPI_LOCAL_RANK} >> ${ENCFS_LOCAL_SYNC_FILE}; [[ -x "$(command -v fsync)" ]] && fsync ${ENCFS_LOCAL_SYNC_FILE} || true"; do  # FIXME: fsync-utility-alternative?
         sleep 1
     done
+    while mount | grep "${MOUNT_DIR}" ; do
+        # wait on all processors until the directory is cleanly unmounted (ensures that the umount operation on LOCAL_RANk==0 has finished)
+        sleep 1
+    done
 fi
 
 exit ${RET}
