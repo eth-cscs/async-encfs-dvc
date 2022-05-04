@@ -1,0 +1,19 @@
+schema: '2.0'
+stages:
+  app_sim_v1_simulation_51:
+    cmd: set -o pipefail; mkdir -p output && ../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
+      app_sim_v1_simulation_51 dvc_app.yaml simulation sarus run --mount=type=bind,source="$(realpath
+      ../../../..)",destination="/app-data"  --entrypoint bash load/castor-dvc/app_sim
+      -c "/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/50/output
+      --simulation-output /app-data/app_sim/v1/simulation/51/output --simulation-output-file-num-per-rank
+      1 --simulation-output-file-size 2000000000" 2>&1 | tee output/stage_out.log
+    deps:
+    - path: ../50/output
+      md5: 37db6c79d4f0dc937353d846b00e56d7.dir
+      size: 16000017150
+      nfiles: 19
+    outs:
+    - path: output
+      md5: 93dae32e419af8e7b35421c39bbb56d0.dir
+      size: 30004209838
+      nfiles: 18

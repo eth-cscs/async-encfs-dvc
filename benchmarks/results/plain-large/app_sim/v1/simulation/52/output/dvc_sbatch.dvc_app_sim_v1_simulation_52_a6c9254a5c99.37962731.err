@@ -1,0 +1,93 @@
++ dvc_stage_name=app_sim_v1_simulation_52
++ shift
++ echo 'TODO: Clean up of any left-overs from previous run (in case of requeue)'
++ echo 'Running dvc stage dvc_app_sim_v1_simulation_52_a6c9254a5c99.'
++ mv app_sim_v1_simulation_52.dvc_pending app_sim_v1_simulation_52.dvc_started
++ fsync app_sim_v1_simulation_52.dvc_started
++ srun --wait=300 sarus run --mount=type=bind,source=/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain,destination=/app-data --entrypoint bash load/castor-dvc/app_sim -c '/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/51/output --simulation-output /app-data/app_sim/v1/simulation/52/output --simulation-output-file-num-per-rank 1 --simulation-output-file-size 4000000000'
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.5.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.4.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.10.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.0.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.2.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.3.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.1.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.7.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.6.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.11.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.15.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.14.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.9.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.8.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.12.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/52/output/sim.13.0.dat bs=4k iflag=fullblock,count_bytes count=4000000000
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 46.8547 s, 85.4 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 47.1519 s, 84.8 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 48.6926 s, 82.1 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 48.763 s, 82.0 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 49.445 s, 80.9 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 49.5975 s, 80.6 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 49.6435 s, 80.6 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 49.8082 s, 80.3 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 49.8141 s, 80.3 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 50.0006 s, 80.0 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 50.7092 s, 78.9 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 50.9936 s, 78.4 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 51.8212 s, 77.2 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 51.989 s, 76.9 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 55.1333 s, 72.6 MB/s
+976562+1 records in
+976562+1 records out
+4000000000 bytes (4.0 GB, 3.7 GiB) copied, 55.1363 s, 72.5 MB/s
+
+real	1m22.411s
+user	0m0.058s
+sys	0m0.029s
++ mv app_sim_v1_simulation_52.dvc_started app_sim_v1_simulation_52.dvc_complete
++ fsync app_sim_v1_simulation_52.dvc_complete

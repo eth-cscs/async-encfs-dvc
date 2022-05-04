@@ -1,0 +1,35 @@
+TODO: Clean up of any left-overs from previous run (in case of requeue)
+Running dvc stage dvc_app_sim_v1_simulation_52_a6c9254a5c99.
+simulation.sh: Running simulation on rank 5, writing output to /app-data/app_sim/v1/simulation/52/output/sim.5.0.dat.
+simulation.sh: Running simulation on rank 4, writing output to /app-data/app_sim/v1/simulation/52/output/sim.4.0.dat.
+simulation.sh: Running simulation on rank 10, writing output to /app-data/app_sim/v1/simulation/52/output/sim.10.0.dat.
+simulation.sh: Running simulation on rank 0, writing output to /app-data/app_sim/v1/simulation/52/output/sim.0.0.dat.
+simulation.sh: Running simulation on rank 2, writing output to /app-data/app_sim/v1/simulation/52/output/sim.2.0.dat.
+simulation.sh: Running simulation on rank 3, writing output to /app-data/app_sim/v1/simulation/52/output/sim.3.0.dat.
+simulation.sh: Running simulation on rank 1, writing output to /app-data/app_sim/v1/simulation/52/output/sim.1.0.dat.
+simulation.sh: Running simulation on rank 7, writing output to /app-data/app_sim/v1/simulation/52/output/sim.7.0.dat.
+simulation.sh: Running simulation on rank 6, writing output to /app-data/app_sim/v1/simulation/52/output/sim.6.0.dat.
+simulation.sh: Running simulation on rank 11, writing output to /app-data/app_sim/v1/simulation/52/output/sim.11.0.dat.
+simulation.sh: Running simulation on rank 15, writing output to /app-data/app_sim/v1/simulation/52/output/sim.15.0.dat.
+simulation.sh: Running simulation on rank 14, writing output to /app-data/app_sim/v1/simulation/52/output/sim.14.0.dat.
+simulation.sh: Running simulation on rank 9, writing output to /app-data/app_sim/v1/simulation/52/output/sim.9.0.dat.
+simulation.sh: Running simulation on rank 8, writing output to /app-data/app_sim/v1/simulation/52/output/sim.8.0.dat.
+simulation.sh: Running simulation on rank 12, writing output to /app-data/app_sim/v1/simulation/52/output/sim.12.0.dat.
+simulation.sh: Running simulation on rank 13, writing output to /app-data/app_sim/v1/simulation/52/output/sim.13.0.dat.
+
+
+Batch Job Summary Report (version 21.01.1) for Job "dvc_app_sim_v1_simulation_52_a6c9254a5c99" (37962731) on daint
+
+Job information (1/2)
+-----------------------------------------------------------------------------------------------------
+             Submit            Eligible               Start                 End    Elapsed Time limit
+------------------- ------------------- ------------------- ------------------- ---------- ----------
+2022-04-25T19:53:06 2022-04-25T19:59:16 2022-04-25T20:01:43 2022-04-25T20:03:24   00:01:41   01:00:00
+-----------------------------------------------------------------------------------------------------
+
+Job information (2/2)
+-------------------------------------------------------------
+    Username      Account    Partition   NNodes        Energy
+------------ ------------ ------------ -------- -------------
+      lukasd      csstaff       normal        8     59.134 kJ
+

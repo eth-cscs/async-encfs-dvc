@@ -1,0 +1,6 @@
+simulation.sh: Running simulation on rank 7, writing output to /app-data/app_sim/v1/simulation/11/output/sim.7.0.dat.
++ for output_file in "${SIMULATION_OUTPUT_FILES[@]}"
++ dd if=/dev/urandom of=/app-data/app_sim/v1/simulation/11/output/sim.7.0.dat bs=4k iflag=fullblock,count_bytes count=2000000000
+488281+1 records in
+488281+1 records out
+2000000000 bytes (2.0 GB, 1.9 GiB) copied, 69.6382 s, 28.7 MB/s

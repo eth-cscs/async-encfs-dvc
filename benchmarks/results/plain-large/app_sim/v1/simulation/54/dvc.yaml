@@ -1,0 +1,17 @@
+stages:
+  app_sim_v1_simulation_54:
+    desc: Generated with data/demo_plain/app_sim/v1/simulation/data/dvc_tools/dvc_create_stage.py
+      --app-yaml ../app_sim/dvc_app.yaml --stage simulation --run-label 54 --input-simulation
+      53 --simulation-output-file-num-per-rank 1 --simulation-output-file-size 16000000000
+      at commit ea206590ca6d260e4240dd12a36a0bbd6c4a03b5
+    cmd: set -o pipefail; mkdir -p output && ../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
+      app_sim_v1_simulation_54 dvc_app.yaml simulation sarus run --mount=type=bind,source="$(realpath
+      ../../../..)",destination="/app-data"  --entrypoint bash load/castor-dvc/app_sim
+      -c "/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/53/output
+      --simulation-output /app-data/app_sim/v1/simulation/54/output --simulation-output-file-num-per-rank
+      1 --simulation-output-file-size 16000000000" 2>&1 | tee output/stage_out.log
+    deps:
+    - ../53/output
+    outs:
+    - output:
+        persist: true

@@ -1,0 +1,9 @@
++ dvc_stage_name=app_sim_v1_simulation_56
++ shift
++ echo 'Committing dvc stage  (dvc_op_a6c9254a5c99).'
++ srun --nodes 1 --ntasks 1 dvc commit --verbose --force app_sim_v1_simulation_56
+
+real	41m4.529s
+user	0m0.052s
+sys	0m0.023s
++ rm app_sim_v1_simulation_56.dvc_complete

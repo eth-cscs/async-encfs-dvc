@@ -1,0 +1,51 @@
+Running dvc push --verbose  (dvc_op_a6c9254a5c99).
+2022-05-02 21:45:45,464 DEBUG: Checking if stage 'app_sim_v1_simulation_56' is in 'dvc.yaml'
+2022-05-02 21:46:02,858 DEBUG: Preparing to transfer data from '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache' to 'demo_plain_3'
+2022-05-02 21:46:02,858 DEBUG: Preparing to collect status from 'demo_plain_3'
+2022-05-02 21:46:02,859 DEBUG: Collecting status from 'demo_plain_3'
+2022-05-02 21:46:02,897 DEBUG: Querying 6 hashes via object_exists
+2022-05-02 21:46:05,294 DEBUG: Querying 1 hashes via object_exists
+2022-05-02 21:46:05,805 DEBUG: Estimated remote size: 4096 files
+2022-05-02 21:46:05,805 DEBUG: Querying '20' hashes via traverse
+2022-05-02 21:46:10,955 DEBUG: Preparing to collect status from '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache'
+2022-05-02 21:46:10,955 DEBUG: Collecting status from '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache'
+2022-05-02 21:46:11,068 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/ef/8f43ad04b226d0be3cf70b09cb2536' to 'demo_plain_3/ef/8f43ad04b226d0be3cf70b09cb2536'
+2022-05-02 21:46:11,082 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/94/5a4fd62fed0321a99233c6d14454a3' to 'demo_plain_3/94/5a4fd62fed0321a99233c6d14454a3'
+2022-05-02 21:46:11,084 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/e6/090f29c53fe07a24586f3c2173bc6e' to 'demo_plain_3/e6/090f29c53fe07a24586f3c2173bc6e'
+2022-05-02 21:46:11,086 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/31/2abb19ac001dbddf1f5ae311189d70' to 'demo_plain_3/31/2abb19ac001dbddf1f5ae311189d70'
+2022-05-02 21:46:11,091 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/87/b75f53607952336d48391b5d14b3a0' to 'demo_plain_3/87/b75f53607952336d48391b5d14b3a0'
+2022-05-02 21:46:11,092 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/3e/64e31433fe25a625964d31faff58d2' to 'demo_plain_3/3e/64e31433fe25a625964d31faff58d2'
+2022-05-02 21:46:11,094 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/39/4132dd329902889519d03487af6184' to 'demo_plain_3/39/4132dd329902889519d03487af6184'
+2022-05-02 21:46:11,095 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/ee/5c0bce4f9f8ca907e4e22ea0e879d0' to 'demo_plain_3/ee/5c0bce4f9f8ca907e4e22ea0e879d0'
+2022-05-02 21:46:11,098 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/61/1b11cf99159f1bee2f85609f7b6a60' to 'demo_plain_3/61/1b11cf99159f1bee2f85609f7b6a60'
+2022-05-02 21:46:11,101 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/c7/0419b770a470baa156fc5dbaba8f9d' to 'demo_plain_3/c7/0419b770a470baa156fc5dbaba8f9d'
+2022-05-02 21:46:11,105 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/cd/bb3d343397167ba66d3fdd7f21304c' to 'demo_plain_3/cd/bb3d343397167ba66d3fdd7f21304c'
+2022-05-02 21:46:11,109 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/58/d3e8a99a094d8e8a95d8c5b19eedfe' to 'demo_plain_3/58/d3e8a99a094d8e8a95d8c5b19eedfe'
+2022-05-02 21:46:11,111 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/69/7c36b1e71b93853ff9c27ee8ff09c6' to 'demo_plain_3/69/7c36b1e71b93853ff9c27ee8ff09c6'
+2022-05-02 21:46:11,116 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/10/995975828c4c03b2477d27644896d4' to 'demo_plain_3/10/995975828c4c03b2477d27644896d4'
+2022-05-02 21:46:11,117 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/4a/8d20c3823ea400a690d1f6d963ca00' to 'demo_plain_3/4a/8d20c3823ea400a690d1f6d963ca00'
+2022-05-02 21:46:11,118 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/20/3e7ca6483e82cfa68c5a718499ac4a' to 'demo_plain_3/20/3e7ca6483e82cfa68c5a718499ac4a'
+2022-05-02 21:46:11,120 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/67/080c80b76701801ca1b8833b7b618f' to 'demo_plain_3/67/080c80b76701801ca1b8833b7b618f'
+2022-05-02 21:46:11,122 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/c2/6fffec9d9d2f87c795aafb09411090' to 'demo_plain_3/c2/6fffec9d9d2f87c795aafb09411090'
+2022-05-02 21:46:11,125 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/5f/3cfe3dae468347157bd53f050dbafc' to 'demo_plain_3/5f/3cfe3dae468347157bd53f050dbafc'
+2022-05-02 23:35:46,144 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/08/dc4d8451eef5003721c7b08bd8e368.dir' to 'demo_plain_3/08/dc4d8451eef5003721c7b08bd8e368.dir'
+2022-05-02 23:35:46,201 DEBUG: Indexing pushed dir 'md5: 08dc4d8451eef5003721c7b08bd8e368.dir' with '19' nested files
+20 files pushed
+2022-05-02 23:35:47,057 DEBUG: Analytics is disabled.
+
+
+Batch Job Summary Report (version 21.01.1) for Job "dvc_op_a6c9254a5c99" (38136395) on daint
+
+Job information (1/2)
+-----------------------------------------------------------------------------------------------------
+             Submit            Eligible               Start                 End    Elapsed Time limit
+------------------- ------------------- ------------------- ------------------- ---------- ----------
+2022-05-02T15:19:15 2022-05-02T21:43:34 2022-05-02T21:45:16 2022-05-02T23:35:55   01:50:39   12:00:00
+-----------------------------------------------------------------------------------------------------
+
+Job information (2/2)
+-------------------------------------------------------------
+    Username      Account    Partition   NNodes        Energy
+------------ ------------ ------------ -------- -------------
+      lukasd      csstaff       normal        1    919.065 kJ
+

@@ -1,0 +1,22 @@
+stages:
+  app_sim_v1_simulation_16:
+    desc: Generated with data/demo_encfs/config/app_sim/v1/simulation/data/dvc_tools/dvc_create_stage.py
+      --app-yaml ../app_sim/dvc_app.yaml --stage simulation --run-label 16 --input-simulation
+      15 --simulation-output-file-num-per-rank 1 --simulation-output-file-size 64000000000
+      at commit ea206590ca6d260e4240dd12a36a0bbd6c4a03b5
+    cmd: set -o pipefail; mkdir -p ../../../../../encrypt/app_sim/v1/simulation/16/output
+      output && ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh app_sim_v1_simulation_16
+      dvc_app.yaml simulation ../../../../../../dvc_tools/encfs_scripts/encfs_mount_and_run_v2.sh
+      ../../../../../encrypt /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_16_701c16cf7565
+      ../../../../../../../../../../../../tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_16_701c16cf7565/app_sim/v1/simulation/16/output/encfs_out_{MPI_RANK}.log
+      sarus run --mount=type=bind,source="/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_16_701c16cf7565",destination="/app-data"  --entrypoint
+      bash load/castor-dvc/app_sim -c "/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/15/output
+      --simulation-output /app-data/app_sim/v1/simulation/16/output --simulation-output-file-num-per-rank
+      1 --simulation-output-file-size 64000000000" 2>&1 | tee output/stage_out.log
+    deps:
+    - ../../../../../encrypt/app_sim/v1/simulation/15/output
+    outs:
+    - ../../../../../encrypt/app_sim/v1/simulation/16/output:
+        persist: true
+    - output:
+        persist: true

@@ -1,0 +1,12 @@
++ case $1 in
++ in_repo=YES
++ dvc_stage_name=app_sim_v1_simulation_54
++ shift 2
++ [[ YES == NO ]]
++ echo 'Running dvc push --verbose  (dvc_op_a6c9254a5c99).'
++ srun --nodes 1 --ntasks 1 dvc push --verbose app_sim_v1_simulation_54
+
+real	26m37.984s
+user	0m0.045s
+sys	0m0.023s
++ [[ YES == NO ]]

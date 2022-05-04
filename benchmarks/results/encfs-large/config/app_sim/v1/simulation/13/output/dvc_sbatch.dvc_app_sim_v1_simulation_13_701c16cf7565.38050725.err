@@ -1,0 +1,13 @@
++ dvc_stage_name=app_sim_v1_simulation_13
++ shift
++ echo 'TODO: Clean up of any left-overs from previous run (in case of requeue)'
++ echo 'Running dvc stage dvc_app_sim_v1_simulation_13_701c16cf7565.'
++ mv app_sim_v1_simulation_13.dvc_pending app_sim_v1_simulation_13.dvc_started
++ fsync app_sim_v1_simulation_13.dvc_started
++ srun --wait=300 ../../../../../../dvc_tools/encfs_scripts/encfs_mount_and_run_v2.sh ../../../../../encrypt /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 '../../../../../../../../../../../../tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565/app_sim/v1/simulation/13/output/encfs_out_{MPI_RANK}.log' sarus run --mount=type=bind,source=/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565,destination=/app-data --entrypoint bash load/castor-dvc/app_sim -c '/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/12/output --simulation-output /app-data/app_sim/v1/simulation/13/output --simulation-output-file-num-per-rank 1 --simulation-output-file-size 8000000000'
+
+real	4m57.152s
+user	0m0.069s
+sys	0m0.021s
++ mv app_sim_v1_simulation_13.dvc_started app_sim_v1_simulation_13.dvc_complete
++ fsync app_sim_v1_simulation_13.dvc_complete

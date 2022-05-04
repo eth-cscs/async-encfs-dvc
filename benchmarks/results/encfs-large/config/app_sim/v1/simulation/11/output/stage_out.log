@@ -1,0 +1,125 @@
++ dvc_stage_name=app_sim_v1_simulation_11
++ dvc_stage_app_yaml=dvc_app.yaml
++ dvc_stage_app_yaml_name=simulation
++ shift 3
++ set +x
+slurm_enqueue.sh[app_sim_v1_simulation_11]: Info: Putting any concurrent dvc commit or push operations on hold (use slurm_jobs.sh release later). Warning: Concurrent dvc operations cause a potential conflict for acquiring ../../../../../.dvc/tmp/rwlock) and dvc commands (incl. repro) will error out if they detect this.
+slurm_jobs.sh: All jobs of lukasd held. To make sure that no other users run DVC commands on this repo use '../../../../../../dvc_tools/slurm_scripts/slurm_jobs.sh show commit'.
+slurm_jobs.sh: All jobs of lukasd held. To make sure that no other users run DVC commands on this repo use '../../../../../../dvc_tools/slurm_scripts/slurm_jobs.sh show push'.
+slurm_enqueue.sh[app_sim_v1_simulation_11]: DVC stage deps of app_sim_v1_simulation_11: ../10/dvc.yaml:app_sim_v1_simulation_10
+slurm_enqueue.sh[app_sim_v1_simulation_11]: DVC stage outs of app_sim_v1_simulation_11: ../../../../../encrypt/app_sim/v1/simulation/11/output output
++ dep_slurm_stage_jobids=()
++ for dep in "${dvc_stage_deps[@]}"
++ log 'Looking for state of DVC dependency ../10/dvc.yaml:app_sim_v1_simulation_10.'
++ echo 'slurm_enqueue.sh[app_sim_v1_simulation_11]: Looking for state of DVC dependency ../10/dvc.yaml:app_sim_v1_simulation_10.'
+slurm_enqueue.sh[app_sim_v1_simulation_11]: Looking for state of DVC dependency ../10/dvc.yaml:app_sim_v1_simulation_10.
++++ dvc_yaml_from_dep ../10/dvc.yaml:app_sim_v1_simulation_10
++++ echo ../10/dvc.yaml
+++ dirname ../10/dvc.yaml
++ dep_dvc_dir=../10
+++ dvc_stage_from_dep ../10/dvc.yaml:app_sim_v1_simulation_10
+++ echo app_sim_v1_simulation_10
++ dep_dvc_stage_name=app_sim_v1_simulation_10
+++ get_dvc_slurm_job_name ../10/dvc.yaml:app_sim_v1_simulation_10
++++ dvc_stage_from_dep ../10/dvc.yaml:app_sim_v1_simulation_10
++++ echo app_sim_v1_simulation_10
+++ echo dvc_app_sim_v1_simulation_10_701c16cf7565
++ dep_slurm_stage_name=dvc_app_sim_v1_simulation_10_701c16cf7565
+++ squeue --name=dvc_app_sim_v1_simulation_10_701c16cf7565 --Format=JobID --sort=-S -h
++ dep_slurm_stage_jobid='38050707            '
++ '[' -n '38050707            ' ']'
++ dep_slurm_stage_jobids+=("${dep_slurm_stage_jobid}")
++ '[' 1 -gt 0 ']'
+++ printf ,%s '38050707            '
++ dvc_slurm_stage_deps=',38050707            '
++ dvc_slurm_stage_deps='--dependency afterok:38050707            '
+++ squeue --name=dvc_app_sim_v1_simulation_11_701c16cf7565 --Format=JobID --sort=-S -h
++ stage_jobid=
++ [[ -n '' ]]
++ [[ -f app_sim_v1_simulation_11.dvc_pending ]]
++ [[ -f app_sim_v1_simulation_11.dvc_started ]]
++ '[' -f app_sim_v1_simulation_11.dvc_complete ']'
++ mv ../../../../../.dvc/tmp/rwlock ../../../../../.dvc/tmp/rwlock.bak
+++ dvc status --json app_sim_v1_simulation_11
++ stage_status='{"app_sim_v1_simulation_11": [{"changed deps": {"../../../../../encrypt/app_sim/v1/simulation/10/output": "modified"}}, {"changed outs": {"../../../../../encrypt/app_sim/v1/simulation/11/output": "modified", "output": "modified"}}]}'
++ mv ../../../../../.dvc/tmp/rwlock.bak ../../../../../.dvc/tmp/rwlock
++ [[ {"app_sim_v1_simulation_11": [{"changed deps": {"../../../../../encrypt/app_sim/v1/simulation/10/output": "modified"}}, {"changed outs": {"../../../../../encrypt/app_sim/v1/simulation/11/output": "modified", "output": "modified"}}]} == \{\} ]]
++ log 'Cannot find running/committed stage app_sim_v1_simulation_11 - submitting it.'
++ echo 'slurm_enqueue.sh[app_sim_v1_simulation_11]: Cannot find running/committed stage app_sim_v1_simulation_11 - submitting it.'
+slurm_enqueue.sh[app_sim_v1_simulation_11]: Cannot find running/committed stage app_sim_v1_simulation_11 - submitting it.
++ run_stage=YES
++ log_submitted_jobs=()
++ [[ NO != \Y\E\S ]]
++ dvc_slurm_hold_opts=--hold
++ [[ YES == \Y\E\S ]]
++ log 'Launching asynchronous stage app_sim_v1_simulation_11 with SLURM'
++ echo 'slurm_enqueue.sh[app_sim_v1_simulation_11]: Launching asynchronous stage app_sim_v1_simulation_11 with SLURM'
+slurm_enqueue.sh[app_sim_v1_simulation_11]: Launching asynchronous stage app_sim_v1_simulation_11 with SLURM
++ for out in "${dvc_stage_outs[@]}"
++ ls -I stage_out.log ../../../../../encrypt/app_sim/v1/simulation/11/output
++ xargs -I '{}' rm -r '../../../../../encrypt/app_sim/v1/simulation/11/output/{}'
++ mkdir -p ../../../../../encrypt/app_sim/v1/simulation/11/output
++ for out in "${dvc_stage_outs[@]}"
++ ls -I stage_out.log output
++ xargs -I '{}' rm -r 'output/{}'
++ mkdir -p output
++ rm app_sim_v1_simulation_11.dvc_pending app_sim_v1_simulation_11.dvc_started app_sim_v1_simulation_11.dvc_complete app_sim_v1_simulation_11.dvc_failed
+rm: cannot remove 'app_sim_v1_simulation_11.dvc_pending': No such file or directory
+rm: cannot remove 'app_sim_v1_simulation_11.dvc_started': No such file or directory
+rm: cannot remove 'app_sim_v1_simulation_11.dvc_complete': No such file or directory
+rm: cannot remove 'app_sim_v1_simulation_11.dvc_failed': No such file or directory
++ true
++ rm 'dvc_sbatch.dvc_commit.*.out' 'dvc_sbatch.dvc_commit.*.err'
+rm: cannot remove 'dvc_sbatch.dvc_commit.*.out': No such file or directory
+rm: cannot remove 'dvc_sbatch.dvc_commit.*.err': No such file or directory
++ true
++ rm 'dvc_sbatch.dvc_push.*.out' 'dvc_sbatch.dvc_push.*.err'
+rm: cannot remove 'dvc_sbatch.dvc_push.*.out': No such file or directory
+rm: cannot remove 'dvc_sbatch.dvc_push.*.err': No such file or directory
++ true
++ rm slurm_enqueue_dvc_push_app_sim_v1_simulation_11.sh
+rm: cannot remove 'slurm_enqueue_dvc_push_app_sim_v1_simulation_11.sh': No such file or directory
++ true
++ rm 'dvc_sbatch.dvc_cleanup_app_sim_v1_simulation_11_701c16cf7565.*.out' 'dvc_sbatch.dvc_cleanup_app_sim_v1_simulation_11_701c16cf7565.*.err'
+rm: cannot remove 'dvc_sbatch.dvc_cleanup_app_sim_v1_simulation_11_701c16cf7565.*.out': No such file or directory
+rm: cannot remove 'dvc_sbatch.dvc_cleanup_app_sim_v1_simulation_11_701c16cf7565.*.err': No such file or directory
++ true
++++ dirname ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
+++ sbatch --parsable --job-name dvc_app_sim_v1_simulation_11_701c16cf7565 --dependency afterok:38050707 --hold --account csstaff --nodes 8 --ntasks 16 --cpus-per-task 12 --constraint gpu --time 04:00:00 ../../../../../../dvc_tools/slurm_scripts/sbatch_dvc_stage.sh app_sim_v1_simulation_11 ../../../../../../dvc_tools/encfs_scripts/encfs_mount_and_run_v2.sh ../../../../../encrypt /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_11_701c16cf7565 '../../../../../../../../../../../../tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_11_701c16cf7565/app_sim/v1/simulation/11/output/encfs_out_{MPI_RANK}.log' sarus run --mount=type=bind,source=/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_11_701c16cf7565,destination=/app-data --entrypoint bash load/castor-dvc/app_sim -c '/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/10/output --simulation-output /app-data/app_sim/v1/simulation/11/output --simulation-output-file-num-per-rank 1 --simulation-output-file-size 2000000000'
++ stage_jobid=38050711
++ echo ../../../../../../dvc_tools/encfs_scripts/encfs_mount_and_run_v2.sh ../../../../../encrypt /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_11_701c16cf7565 '../../../../../../../../../../../../tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_11_701c16cf7565/app_sim/v1/simulation/11/output/encfs_out_{MPI_RANK}.log' sarus run --mount=type=bind,source=/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_11_701c16cf7565,destination=/app-data --entrypoint bash load/castor-dvc/app_sim -c '/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/10/output --simulation-output /app-data/app_sim/v1/simulation/11/output --simulation-output-file-num-per-rank 1 --simulation-output-file-size 2000000000'
++ fsync app_sim_v1_simulation_11.dvc_pending
++ echo 38050711
++ log_submitted_jobs+=("stage: ${stage_jobid}")
++++ dirname ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
+++ sbatch --parsable --job-name dvc_cleanup_app_sim_v1_simulation_11_701c16cf7565 --dependency afternotok:38050711 --nodes 1 --ntasks 1 --account csstaff --cpus-per-task 24 --constraint mc --time 12:00:00 ../../../../../../dvc_tools/slurm_scripts/sbatch_dvc_cleanup.sh app_sim_v1_simulation_11 ../../../../../encrypt/app_sim/v1/simulation/11/output output
++ cleanup_jobid=38050712
++ echo 38050712
++ log_submitted_jobs+=("cleanup: ${cleanup_jobid}")
++ [[ YES == \Y\E\S ]]
++ '[' -n 38050711 ']'
++ dvc_slurm_commit_deps='--dependency afterok:38050711,singleton'
++++ dirname ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
+++ sbatch --parsable --job-name dvc_op_701c16cf7565 --dependency afterok:38050711,singleton --hold --nodes 1 --ntasks 1 --account csstaff --cpus-per-task 24 --constraint mc --time 12:00:00 ../../../../../../dvc_tools/slurm_scripts/sbatch_dvc_commit.sh app_sim_v1_simulation_11
++ commit_jobid=38050713
++ echo 38050713
++ log_submitted_jobs+=("commit: ${commit_jobid}")
++ [[ YES == \Y\E\S ]]
++ '[' -n 38050713 ']'
++ dvc_slurm_push_deps='--dependency afterok:38050713,singleton'
++ [[ YES == \Y\E\S ]]
++++ dirname ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
+++ sbatch --parsable --job-name dvc_op_701c16cf7565 --dependency afterok:38050713,singleton --hold --nodes 1 --ntasks 1 --account csstaff --cpus-per-task 24 --constraint mc --time 12:00:00 ../../../../../../dvc_tools/slurm_scripts/sbatch_dvc_push.sh app_sim_v1_simulation_11
++ push_jobid=38050714
++ echo 38050714
++ log_submitted_jobs+=("push: ${push_jobid}")
+++ printf ', %s' 'stage: 38050711' 'cleanup: 38050712' 'commit: 38050713' 'push: 38050714'
++ log_submitted_jobs=', stage: 38050711, cleanup: 38050712, commit: 38050713, push: 38050714'
++ log 'Submitted all jobs for stage app_sim_v1_simulation_11 (stage: 38050711, cleanup: 38050712, commit: 38050713, push: 38050714).'
++ echo 'slurm_enqueue.sh[app_sim_v1_simulation_11]: Submitted all jobs for stage app_sim_v1_simulation_11 (stage: 38050711, cleanup: 38050712, commit: 38050713, push: 38050714).'
+slurm_enqueue.sh[app_sim_v1_simulation_11]: Submitted all jobs for stage app_sim_v1_simulation_11 (stage: 38050711, cleanup: 38050712, commit: 38050713, push: 38050714).
++ [[ NO != \Y\E\S ]]
+++ dirname ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh
++ log 'All jobs submitted on hold to enable further DVC usage. When ready, use '\''scontrol release <job-id1> <job-id2> ...'\'' to selectively unblock invidual jobs or '\''../../../../../../dvc_tools/slurm_scripts/slurm_jobs.sh release (stage|commit|push)'\'' to unblock all jobs of particular type in this DVC repo.'
++ echo 'slurm_enqueue.sh[app_sim_v1_simulation_11]: All jobs submitted on hold to enable further DVC usage. When ready, use '\''scontrol release <job-id1> <job-id2> ...'\'' to selectively unblock invidual jobs or '\''../../../../../../dvc_tools/slurm_scripts/slurm_jobs.sh release (stage|commit|push)'\'' to unblock all jobs of particular type in this DVC repo.'
+slurm_enqueue.sh[app_sim_v1_simulation_11]: All jobs submitted on hold to enable further DVC usage. When ready, use 'scontrol release <job-id1> <job-id2> ...' to selectively unblock invidual jobs or '../../../../../../dvc_tools/slurm_scripts/slurm_jobs.sh release (stage|commit|push)' to unblock all jobs of particular type in this DVC repo.

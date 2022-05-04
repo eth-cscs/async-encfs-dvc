@@ -42,7 +42,7 @@ dvc_root="$(dvc root)"
 # TODO: separate script to source
 # Append dvc root to SLURM job ID (due to repo-level lock)
 dvc_stage_slurm_prefix="dvc"
-dvc_stage_slurm_suffix=$(python3 -c "import hashlib; print(hashlib.sha1(\"$(realpath "${dvc_root}")\".encode(\"utf-8\")).hexdigest()[:12])") # equivalent to "$(echo -n $(realpath "${dvc_root}") | sha1sum | awk '{print $1}' | head -c 12)"
+dvc_stage_slurm_suffix=$(python3 -c "import hashlib; print(hashlib.sha1(\"$(realpath "${dvc_root}")\".encode(\"utf-8\")).hexdigest()[:12])") # equivalent to "$(echo -n $(realpath "${dvc_root}") | sha1sum | head -c 12)"
 get_dvc_slurm_job_name () { # compute SLURM job name for DVC stage/commit in $1
   echo "${dvc_stage_slurm_prefix}_$(dvc_stage_from_dep "$1")_${dvc_stage_slurm_suffix}"
 }

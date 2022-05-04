@@ -1,0 +1,26 @@
+schema: '2.0'
+stages:
+  app_sim_v1_simulation_10:
+    cmd: set -o pipefail; mkdir -p ../../../../../encrypt/app_sim/v1/simulation/10/output
+      output && ../../../../../../dvc_tools/slurm_scripts/slurm_enqueue.sh app_sim_v1_simulation_10
+      dvc_app.yaml simulation ../../../../../../dvc_tools/encfs_scripts/encfs_mount_and_run_v2.sh
+      ../../../../../encrypt /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_10_701c16cf7565
+      ../../../../../../../../../../../../tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_10_701c16cf7565/app_sim/v1/simulation/10/output/encfs_out_{MPI_RANK}.log
+      sarus run --mount=type=bind,source="/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_10_701c16cf7565",destination="/app-data"  --entrypoint
+      bash load/castor-dvc/app_sim -c "/src/app/simulation.sh --simulation-input /app-data/app_sim/v1/simulation/9/output
+      --simulation-output /app-data/app_sim/v1/simulation/10/output --simulation-output-file-num-per-rank
+      1 --simulation-output-file-size 1000000000" 2>&1 | tee output/stage_out.log
+    deps:
+    - path: ../../../../../encrypt/app_sim/v1/simulation/9/output
+      md5: b396033e343876e56ce067284e1150f9.dir
+      size: 0
+      nfiles: 1
+    outs:
+    - path: ../../../../../encrypt/app_sim/v1/simulation/10/output
+      md5: a4bf32aca756f6c648ae291601ba7b30.dir
+      size: 16000006753
+      nfiles: 32
+    - path: output
+      md5: aaba35b6416831a9e388477276aaf73a.dir
+      size: 31836
+      nfiles: 3

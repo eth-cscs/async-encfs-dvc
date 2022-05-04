@@ -1,0 +1,118 @@
+TODO: Clean up of any left-overs from previous run (in case of requeue)
+Running dvc stage dvc_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 8 on nid02192: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 9 on nid02192: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02192_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 13 on nid02194: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02194_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 7 on nid02191: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02191_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 2 on nid02189: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 15 on nid02195: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02195_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 1 on nid02188: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02188_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 12 on nid02194: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 6 on nid02191: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 0 on nid02188: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 11 on nid02193: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02193_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 14 on nid02195: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 3 on nid02189: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02189_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 10 on nid02193: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 4 on nid02190: Running encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 5 on nid02190: Waiting for encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 (sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02190_local_sync).
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: total 4.0K
+drwxr-xr-x 3 lukasd csstaff 4.0K 28. Apr 21:53 app_sim
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 12 on nid02194: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02194_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 0 on nid02188: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02188_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 8 on nid02192: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02192_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 4 on nid02190: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02190_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 14 on nid02195: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02195_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 6 on nid02191: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02191_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 10 on nid02193: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02193_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 2 on nid02189: Successfully mounted encfs-dir at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 and wrote to sync-file /scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_encfs/encrypt/.encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565_nid02189_local_sync - starting encfs-job
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 13 on nid02194: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 15 on nid02195: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 9 on nid02192: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 7 on nid02191: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 11 on nid02193: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 3 on nid02189: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 1 on nid02188: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 5 on nid02190: Detected successful encfs-mount at /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565 - starting encfs-job.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 5 on nid02190: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 12 on nid02194: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 12 on nid02194: sync-file content is 0 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 2 on nid02189: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 2 on nid02189: sync-file content is 0 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 4 on nid02190: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 4 on nid02190: sync-file content is 0
+1 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 4 on nid02190: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 3 on nid02189: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 2 on nid02189: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 1 on nid02188: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 10 on nid02193: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 10 on nid02193: sync-file content is 0 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 7 on nid02191: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 11 on nid02193: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 0 on nid02188: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 0 on nid02188: sync-file content is 0
+1 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 10 on nid02193: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 0 on nid02188: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 14 on nid02195: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 14 on nid02195: sync-file content is 0 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 8 on nid02192: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 8 on nid02192: sync-file content is 0 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 13 on nid02194: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 12 on nid02194: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 9 on nid02192: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 8 on nid02192: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 15 on nid02195: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 14 on nid02195: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 6 on nid02191: encfs-job completed.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 6 on nid02191: sync-file content is 0
+1 - entering wait-loop.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Rank 6 on nid02191: sync-file content is 0
+1 - all local ranks finished encfs-job, unmounting encfs.
+encfs_mount_and_run_v2.sh[../../../../../encrypt->/tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565]: Filesystem unmounting: /tmp/encfs_25680_demo_encfs_app_sim_v1_simulation_13_701c16cf7565
+
+
+Batch Job Summary Report (version 21.01.1) for Job "dvc_app_sim_v1_simulation_13_701c16cf7565" (38050725) on daint
+
+Job information (1/2)
+-----------------------------------------------------------------------------------------------------
+             Submit            Eligible               Start                 End    Elapsed Time limit
+------------------- ------------------- ------------------- ------------------- ---------- ----------
+2022-04-28T23:47:36 2022-04-29T00:05:46 2022-04-29T00:05:53 2022-04-29T00:11:08   00:05:15   04:00:00
+-----------------------------------------------------------------------------------------------------
+
+Job information (2/2)
+-------------------------------------------------------------
+    Username      Account    Partition   NNodes        Energy
+------------ ------------ ------------ -------- -------------
+      lukasd      csstaff       normal        8    241.283 kJ
+

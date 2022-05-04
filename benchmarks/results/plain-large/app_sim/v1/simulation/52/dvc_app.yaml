@@ -1,0 +1,83 @@
+# app_sim version 1 app-description for DVC stage generation
+
+app:
+  name: &app_name app_sim/v1  # apps should always be versioned
+  container_engine: sarus  # can be none, docker or sarus (container_data only takes effect for the latter two)
+#  container_opts:
+#    '--mpi': ''  # required when using MPI inside Sarus containers
+  image: load/castor-dvc/app_sim # container image to use, e.g. ubuntu:20.04 (only takes effect if container_engine != none)
+  code_root: &code_root /src/app #"\\$(git rev-parse --show-toplevel)/app_sim" # /src/app # absolute path or "\\$(git rev-parse --show-toplevel)" with container_engine == none
+
+  stages: # app-specific stages
+    simulation:
+      type: simulation_stage
+      input_app: # parameterizes stage
+        name: &simulation_input_app_name app_sim/v1
+        stage: &simulation_input_app_stage simulation
+#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_opts:
+#        -np: 2
+      slurm_opts:
+        stage:
+          --nodes: 8
+          --ntasks: 16
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '01:00:00'
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: '12:00:00'
+        all:
+          --account: csstaff
+      script: [*code_root, simulation.sh] 
+      # for script simulation.sh (sets up container environment and forwards it to "exec python3 simulation.py $@")
+      # (note that these options are not processed w.r.t. dvc_root_host)
+      extra_command_line_options:
+        --simulation-output-file-num-per-rank: "1"
+        --simulation-output-file-size: "4000000000"
+
+
+container_data:  # takes only effect if container_engine is not 'none'
+  mount:  # absolute path in container (mount target for data - either plain or encfs)
+    data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host if desired
+
+
+# include dvc-root/mounts and stage type information
+include:
+  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
+  simulation_stage: '../data/dvc_tools/dvc_defs/stages/dvc_simulation.yaml'
+
+# DVC repo configuration without encryption
+
+host_data:
+  dvc_root: &dvc_root_host ../../../demo_plain # output of `dvc root` in any subdirectory of this dir
+  dvc_config: &dvc_config_host .
+  mount:  # relative to dvc_root_host
+    data:
+      type: plain
+      origin: &mount_data_host .
+
+# A generic simulation stage
+# All values are interpreted as paths relative to the host/container data (encfs) mount point
+
+simulation_stage:
+  input:  # input data dependencies
+    simulation:  # stage_data is relative to mount data point
+      stage_data: &input_simulation_data [*simulation_input_app_name, *simulation_input_app_stage, "51/output"]
+      command_line_options:  # for simulation.sh, which sets up container environment and ends with "exec python3 simulation.py $@"
+        --simulation-input: [*input_simulation_data, ""]
+
+  # change the following to a different input if not first stage in pipeline
+  output:  # output data
+    simulation:
+      stage_data: &output_simulation [*app_name, simulation, "52/output"]
+      command_line_options:  # for simulation.sh, which sets up container environment and ends with "exec python3 simulation.py $@"
+        --simulation-output: *output_simulation
+
+  dvc: [*output_simulation, ".."]  # dvc.yaml storage location
+
+original:
+  file: "$(dvc root)/../../app_sim/22-04-25_19-51-56_daint101_lukasd_dvc_app.yaml"  # source of this DVC app stage configuration
+  run_label: "52"  # original run_label used
+

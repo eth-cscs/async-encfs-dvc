@@ -1,0 +1,176 @@
+Committing dvc stage  (dvc_op_a6c9254a5c99).
+2022-04-25 20:56:29,933 DEBUG: Checking if stage 'app_sim_v1_simulation_56' is in 'dvc.yaml'
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.15.0.dat'. This is only done once.
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.2.0.dat'. This is only done once.
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.10.0.dat'. This is only done once.
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.7.0.dat'. This is only done once.
+2022-04-25 20:59:55,339 DEBUG: state save (648577342465163518, 1650912357000000000, 64000000000) ee5c0bce4f9f8ca907e4e22ea0e879d0
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.6.0.dat'. This is only done once.
+2022-04-25 20:59:56,136 DEBUG: state save (648577343505320436, 1650912328000000000, 64000000000) c70419b770a470baa156fc5dbaba8f9d
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.13.0.dat'. This is only done once.
+2022-04-25 21:00:03,415 DEBUG: state save (648577332298240096, 1650912333000000000, 64000000000) 5f3cfe3dae468347157bd53f050dbafc
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.5.0.dat'. This is only done once.
+2022-04-25 21:00:11,865 DEBUG: state save (648577625563887109, 1650912373000000000, 64000000000) 697c36b1e71b93853ff9c27ee8ff09c6
+2022-04-25 21:00:11,884 DEBUG: state save (648577310135502765, 1650912399000000000, 5575) e6090f29c53fe07a24586f3c2173bc6e
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.1.0.dat'. This is only done once.
+2022-04-25 21:03:14,516 DEBUG: state save (648577376791365214, 1650912362000000000, 64000000000) 312abb19ac001dbddf1f5ae311189d70
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.3.0.dat'. This is only done once.
+2022-04-25 21:03:22,198 DEBUG: state save (648577548808110204, 1650912393000000000, 64000000000) c26fffec9d9d2f87c795aafb09411090
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.9.0.dat'. This is only done once.
+2022-04-25 21:03:23,504 DEBUG: state save (648577332298240097, 1650912333000000000, 64000000000) 394132dd329902889519d03487af6184
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.14.0.dat'. This is only done once.
+2022-04-25 21:03:33,753 DEBUG: state save (648577310135502767, 1650912294000000000, 64000000000) 87b75f53607952336d48391b5d14b3a0
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.4.0.dat'. This is only done once.
+2022-04-25 21:06:36,027 DEBUG: state save (648577626100732773, 1650912354000000000, 64000000000) cdbb3d343397167ba66d3fdd7f21304c
+2022-04-25 21:06:36,057 DEBUG: state save (648577310135502764, 1650912409000000000, 2955) 58d3e8a99a094d8e8a95d8c5b19eedfe
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.0.0.dat'. This is only done once.
+2022-04-25 21:06:36,290 DEBUG: state save (648577625563887108, 1650912374000000000, 64000000000) 611b11cf99159f1bee2f85609f7b6a60
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.8.0.dat'. This is only done once.
+2022-04-25 21:06:41,346 DEBUG: state save (648577342465163519, 1650912355000000000, 64000000000) 67080c80b76701801ca1b8833b7b618f
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.12.0.dat'. This is only done once.
+2022-04-25 21:06:47,512 DEBUG: state save (648577548808110203, 1650912392000000000, 64000000000) ef8f43ad04b226d0be3cf70b09cb2536
+Computing md5 for a large file '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.11.0.dat'. This is only done once.
+2022-04-25 21:10:41,615 DEBUG: state save (648577626100732772, 1650912354000000000, 64000000000) 203e7ca6483e82cfa68c5a718499ac4a
+2022-04-25 21:10:42,966 DEBUG: state save (648577310135502766, 1650912292000000000, 64000000000) 10995975828c4c03b2477d27644896d4
+2022-04-25 21:10:46,252 DEBUG: state save (648577376791365213, 1650912361000000000, 64000000000) 3e64e31433fe25a625964d31faff58d2
+2022-04-25 21:11:01,500 DEBUG: state save (648577343505320435, 1650912332000000000, 64000000000) 4a8d20c3823ea400a690d1f6d963ca00
+2022-04-25 21:11:01,509 DEBUG: staged tree 'object md5: 08dc4d8451eef5003721c7b08bd8e368.dir'
+2022-04-25 21:11:01,510 DEBUG: state save (648577653581841686, f7cc5829f9e3416774eeffd76ee6dc7a, 1024000018561) 08dc4d8451eef5003721c7b08bd8e368.dir
+2022-04-25 21:11:01,663 DEBUG: Computed stage: 'app_sim_v1_simulation_56' md5: 'c04ef5e7d415c4ef8fbd7c33e68f0279'
+2022-04-25 21:11:01,745 DEBUG: Preparing to transfer data from 'memory://dvc-staging/7883206c6ffb4584f10237adba5e377c016bfca9aee7da974c9be6ce11baf9c1' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache'
+2022-04-25 21:11:01,746 DEBUG: Preparing to collect status from '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache'
+2022-04-25 21:11:01,746 DEBUG: Collecting status from '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache'
+2022-04-25 21:11:01,987 DEBUG: Preparing to collect status from 'memory://dvc-staging/7883206c6ffb4584f10237adba5e377c016bfca9aee7da974c9be6ce11baf9c1'
+2022-04-25 21:11:02,029 DEBUG: state save (648577548808110203, 1650912392000000000, 64000000000) ef8f43ad04b226d0be3cf70b09cb2536
+2022-04-25 21:11:02,030 DEBUG: state save (648577376791365214, 1650912362000000000, 64000000000) 312abb19ac001dbddf1f5ae311189d70
+2022-04-25 21:11:02,031 DEBUG: state save (648577376791365213, 1650912361000000000, 64000000000) 3e64e31433fe25a625964d31faff58d2
+2022-04-25 21:11:02,032 DEBUG: state save (648577343505320435, 1650912332000000000, 64000000000) 4a8d20c3823ea400a690d1f6d963ca00
+2022-04-25 21:11:02,032 DEBUG: state save (648577310135502765, 1650912399000000000, 5575) e6090f29c53fe07a24586f3c2173bc6e
+2022-04-25 21:11:02,033 DEBUG: state save (648577548808110204, 1650912393000000000, 64000000000) c26fffec9d9d2f87c795aafb09411090
+2022-04-25 21:11:02,033 DEBUG: state save (648577310135502764, 1650912409000000000, 2955) 58d3e8a99a094d8e8a95d8c5b19eedfe
+2022-04-25 21:11:02,034 DEBUG: state save (648577626100732773, 1650912354000000000, 64000000000) cdbb3d343397167ba66d3fdd7f21304c
+2022-04-25 21:11:02,034 DEBUG: state save (648577310135502766, 1650912292000000000, 64000000000) 10995975828c4c03b2477d27644896d4
+2022-04-25 21:11:02,035 DEBUG: state save (648577332298240096, 1650912333000000000, 64000000000) 5f3cfe3dae468347157bd53f050dbafc
+2022-04-25 21:11:02,036 DEBUG: state save (648577342465163518, 1650912357000000000, 64000000000) ee5c0bce4f9f8ca907e4e22ea0e879d0
+2022-04-25 21:11:02,036 DEBUG: state save (648577310135502767, 1650912294000000000, 64000000000) 87b75f53607952336d48391b5d14b3a0
+2022-04-25 21:11:02,036 DEBUG: state save (648577343505320436, 1650912328000000000, 64000000000) c70419b770a470baa156fc5dbaba8f9d
+2022-04-25 21:11:02,037 DEBUG: state save (648577342465163519, 1650912355000000000, 64000000000) 67080c80b76701801ca1b8833b7b618f
+2022-04-25 21:11:02,038 DEBUG: state save (648577626100732772, 1650912354000000000, 64000000000) 203e7ca6483e82cfa68c5a718499ac4a
+2022-04-25 21:11:02,038 DEBUG: state save (648577332298240097, 1650912333000000000, 64000000000) 394132dd329902889519d03487af6184
+2022-04-25 21:11:02,039 DEBUG: state save (648577625563887109, 1650912373000000000, 64000000000) 697c36b1e71b93853ff9c27ee8ff09c6
+2022-04-25 21:11:02,039 DEBUG: state save (648577653581841876, 1650909234000000000, 10031) 945a4fd62fed0321a99233c6d14454a3
+2022-04-25 21:11:02,046 DEBUG: state save (648577625563887108, 1650912374000000000, 64000000000) 611b11cf99159f1bee2f85609f7b6a60
+2022-04-25 21:11:02,116 DEBUG: Downloading 'memory://dvc-staging/7883206c6ffb4584f10237adba5e377c016bfca9aee7da974c9be6ce11baf9c1/08/dc4d8451eef5003721c7b08bd8e368.dir' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/08/dc4d8451eef5003721c7b08bd8e368.dir'
+2022-04-25 21:11:02,122 DEBUG: state save (648577608568620653, 1650913862000000000, 1465) 08dc4d8451eef5003721c7b08bd8e368.dir
+2022-04-25 21:11:02,146 DEBUG: [Errno 95] no more link types left to try out: [Errno 95] 'reflink' is not supported by <class 'dvc.fs.local.LocalFileSystem'>: [Errno 95] Operation not supported
+------------------------------------------------------------
+Traceback (most recent call last):
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/fs/utils.py", line 28, in _link
+    func(from_path, to_path)
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/fs/local.py", line 145, in reflink
+    System.reflink(from_info, to_info)
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/system.py", line 112, in reflink
+    System._reflink_linux(source, link_name)
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/system.py", line 96, in _reflink_linux
+    fcntl.ioctl(d.fileno(), FICLONE, s.fileno())
+OSError: [Errno 95] Operation not supported
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/fs/utils.py", line 69, in _try_links
+    return _link(link, from_fs, from_path, to_fs, to_path)
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/fs/utils.py", line 32, in _link
+    raise OSError(
+OSError: [Errno 95] 'reflink' is not supported by <class 'dvc.fs.local.LocalFileSystem'>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/fs/utils.py", line 124, in _test_link
+    _try_links([link], from_fs, from_file, to_fs, to_file)
+  File "/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/venv/lib/python3.9/site-packages/dvc/fs/utils.py", line 77, in _try_links
+    raise OSError(
+OSError: [Errno 95] no more link types left to try out
+------------------------------------------------------------
+2022-04-25 21:11:02,182 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/.nrzmoTxQdJhDH55YvkPHcF.tmp'
+2022-04-25 21:11:02,183 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/.PJtfQ4wPamaCqPQaWh4L6w.tmp' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/.nrzmoTxQdJhDH55YvkPHcF.tmp'
+2022-04-25 21:11:02,188 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/.nrzmoTxQdJhDH55YvkPHcF.tmp'
+2022-04-25 21:11:02,189 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/.PJtfQ4wPamaCqPQaWh4L6w.tmp'
+2022-04-25 21:11:02,189 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.6.0.dat'
+2022-04-25 21:11:02,191 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/39/4132dd329902889519d03487af6184' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.6.0.dat'
+2022-04-25 21:12:38,402 DEBUG: state save (648577608568620660, 1650913958000000000, 64000000000) 394132dd329902889519d03487af6184
+2022-04-25 21:12:38,404 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/stage_out.log'
+2022-04-25 21:12:38,405 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/94/5a4fd62fed0321a99233c6d14454a3' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/stage_out.log'
+2022-04-25 21:12:38,449 DEBUG: state save (648577608568620663, 1650913958000000000, 10031) 945a4fd62fed0321a99233c6d14454a3
+2022-04-25 21:12:38,450 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.8.0.dat'
+2022-04-25 21:12:38,452 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/20/3e7ca6483e82cfa68c5a718499ac4a' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.8.0.dat'
+2022-04-25 21:14:25,868 DEBUG: state save (648577608568620666, 1650914065000000000, 64000000000) 203e7ca6483e82cfa68c5a718499ac4a
+2022-04-25 21:14:25,869 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.5.0.dat'
+2022-04-25 21:14:25,871 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/c2/6fffec9d9d2f87c795aafb09411090' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.5.0.dat'
+2022-04-25 21:16:07,174 DEBUG: state save (648577608568620669, 1650914167000000000, 64000000000) c26fffec9d9d2f87c795aafb09411090
+2022-04-25 21:16:07,176 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.11.0.dat'
+2022-04-25 21:16:07,177 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/4a/8d20c3823ea400a690d1f6d963ca00' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.11.0.dat'
+2022-04-25 21:17:47,276 DEBUG: state save (648577608568620672, 1650914267000000000, 64000000000) 4a8d20c3823ea400a690d1f6d963ca00
+2022-04-25 21:17:47,278 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.2.0.dat'
+2022-04-25 21:17:47,279 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/69/7c36b1e71b93853ff9c27ee8ff09c6' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.2.0.dat'
+2022-04-25 21:19:25,162 DEBUG: state save (648577608568620675, 1650914365000000000, 64000000000) 697c36b1e71b93853ff9c27ee8ff09c6
+2022-04-25 21:19:25,163 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.10.0.dat'
+2022-04-25 21:19:25,165 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/c7/0419b770a470baa156fc5dbaba8f9d' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.10.0.dat'
+2022-04-25 21:21:01,012 DEBUG: state save (648577608568620678, 1650914461000000000, 64000000000) c70419b770a470baa156fc5dbaba8f9d
+2022-04-25 21:21:01,014 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.14.0.dat'
+2022-04-25 21:21:01,016 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/67/080c80b76701801ca1b8833b7b618f' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.14.0.dat'
+2022-04-25 21:22:42,538 DEBUG: state save (648577608568620681, 1650914562000000000, 64000000000) 67080c80b76701801ca1b8833b7b618f
+2022-04-25 21:22:42,539 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.7.0.dat'
+2022-04-25 21:22:42,541 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/5f/3cfe3dae468347157bd53f050dbafc' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.7.0.dat'
+2022-04-25 21:24:19,654 DEBUG: state save (648577608568620684, 1650914659000000000, 64000000000) 5f3cfe3dae468347157bd53f050dbafc
+2022-04-25 21:24:19,656 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/dvc_sbatch.dvc_app_sim_v1_simulation_56_a6c9254a5c99.37962750.out'
+2022-04-25 21:24:19,658 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/58/d3e8a99a094d8e8a95d8c5b19eedfe' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/dvc_sbatch.dvc_app_sim_v1_simulation_56_a6c9254a5c99.37962750.out'
+2022-04-25 21:24:19,694 DEBUG: state save (648577608568620687, 1650914659000000000, 2955) 58d3e8a99a094d8e8a95d8c5b19eedfe
+2022-04-25 21:24:19,696 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/dvc_sbatch.dvc_app_sim_v1_simulation_56_a6c9254a5c99.37962750.err'
+2022-04-25 21:24:19,698 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/e6/090f29c53fe07a24586f3c2173bc6e' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/dvc_sbatch.dvc_app_sim_v1_simulation_56_a6c9254a5c99.37962750.err'
+2022-04-25 21:24:19,706 DEBUG: state save (648577608568620690, 1650914659000000000, 5575) e6090f29c53fe07a24586f3c2173bc6e
+2022-04-25 21:24:19,707 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.9.0.dat'
+2022-04-25 21:24:19,709 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/cd/bb3d343397167ba66d3fdd7f21304c' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.9.0.dat'
+2022-04-25 21:26:02,685 DEBUG: state save (648577608568620693, 1650914762000000000, 64000000000) cdbb3d343397167ba66d3fdd7f21304c
+2022-04-25 21:26:02,797 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.0.0.dat'
+2022-04-25 21:26:02,799 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/10/995975828c4c03b2477d27644896d4' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.0.0.dat'
+2022-04-25 21:27:41,922 DEBUG: state save (648577608568620696, 1650914861000000000, 64000000000) 10995975828c4c03b2477d27644896d4
+2022-04-25 21:27:41,983 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.12.0.dat'
+2022-04-25 21:27:41,985 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/3e/64e31433fe25a625964d31faff58d2' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.12.0.dat'
+2022-04-25 21:29:16,195 DEBUG: state save (648577608568620699, 1650914956000000000, 64000000000) 3e64e31433fe25a625964d31faff58d2
+2022-04-25 21:29:16,303 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.1.0.dat'
+2022-04-25 21:29:16,305 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/87/b75f53607952336d48391b5d14b3a0' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.1.0.dat'
+2022-04-25 21:30:53,198 DEBUG: state save (648577608568620702, 1650915053000000000, 64000000000) 87b75f53607952336d48391b5d14b3a0
+2022-04-25 21:30:53,211 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.4.0.dat'
+2022-04-25 21:30:53,213 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/ef/8f43ad04b226d0be3cf70b09cb2536' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.4.0.dat'
+2022-04-25 21:32:29,559 DEBUG: state save (648577608568620705, 1650915149000000000, 64000000000) ef8f43ad04b226d0be3cf70b09cb2536
+2022-04-25 21:32:29,569 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.15.0.dat'
+2022-04-25 21:32:29,571 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/ee/5c0bce4f9f8ca907e4e22ea0e879d0' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.15.0.dat'
+2022-04-25 21:34:02,244 DEBUG: state save (648577608568620708, 1650915242000000000, 64000000000) ee5c0bce4f9f8ca907e4e22ea0e879d0
+2022-04-25 21:34:02,263 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.3.0.dat'
+2022-04-25 21:34:02,509 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/61/1b11cf99159f1bee2f85609f7b6a60' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.3.0.dat'
+2022-04-25 21:35:39,605 DEBUG: state save (648577608568620711, 1650915339000000000, 64000000000) 611b11cf99159f1bee2f85609f7b6a60
+2022-04-25 21:35:39,701 DEBUG: Removing '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.13.0.dat'
+2022-04-25 21:35:39,703 DEBUG: Uploading '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/.dvc/cache/31/2abb19ac001dbddf1f5ae311189d70' to '/scratch/snx3000/lukasd/mitraccel/castor-dvc-private/data/demo_plain/app_sim/v1/simulation/56/output/sim.13.0.dat'
+2022-04-25 21:37:18,319 DEBUG: state save (648577608568620714, 1650915438000000000, 64000000000) 312abb19ac001dbddf1f5ae311189d70
+2022-04-25 21:37:19,509 DEBUG: state save (648577653581841686, 116c8e719b49fd61f18442479323674d, 1024000018561) 08dc4d8451eef5003721c7b08bd8e368.dir
+Updating lock file 'dvc.lock'
+2022-04-25 21:37:19,952 DEBUG: Analytics is disabled.
+
+
+Batch Job Summary Report (version 21.01.1) for Job "dvc_op_a6c9254a5c99" (37962752) on daint
+
+Job information (1/2)
+-----------------------------------------------------------------------------------------------------
+             Submit            Eligible               Start                 End    Elapsed Time limit
+------------------- ------------------- ------------------- ------------------- ---------- ----------
+2022-04-25T19:53:54 2022-04-25T20:55:43 2022-04-25T20:56:13 2022-04-25T21:37:26   00:41:13   12:00:00
+-----------------------------------------------------------------------------------------------------
+
+Job information (2/2)
+-------------------------------------------------------------
+    Username      Account    Partition   NNodes        Energy
+------------ ------------ ------------ -------- -------------
+      lukasd      csstaff       normal        1    307.091 kJ
+
