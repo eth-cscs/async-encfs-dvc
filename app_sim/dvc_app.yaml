@@ -23,11 +23,11 @@ app:
           --ntasks: 16
           --cpus-per-task: 12
           --constraint: gpu
-          --time: 00:15:00
+          --time: '01:00:00'
         dvc:
           --cpus-per-task: 24
           --constraint: mc
-          --time: 00:60:00
+          --time: '12:00:00'
         all:
           --account: csstaff
       script: [*code_root, simulation.sh] 
@@ -45,6 +45,6 @@ container_data:  # takes only effect if container_engine is not 'none'
 
 # include dvc-root/mounts and stage type information
 include:
-  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml'  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
+  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
   simulation_stage: '../data/dvc_tools/dvc_defs/stages/dvc_simulation.yaml'
 

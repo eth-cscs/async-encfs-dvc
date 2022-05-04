@@ -25,9 +25,9 @@ log_error () {
 }
 
 # Default configuration, can be overridden in the dvc repro environment
-DVC_SLURM_DVC_OP_NO_HOLD=${DVC_SLURM_DVC_OP_NO_HOLD:-NO}  # put pending/running dvc commit/push ops on hold during dvc repro execution (due to potential race condition)
+DVC_SLURM_DVC_OP_OUT_OF_REPO=${DVC_SLURM_DVC_OP_OUT_OF_REPO:-NO}  # run commit (and eventually push) out of repo (currently no speedup)
+DVC_SLURM_DVC_OP_NO_HOLD=${DVC_SLURM_DVC_OP_NO_HOLD:-NO}          # put pending/running dvc commit/push ops on hold to enable continued use of dvc and then manual scontrol release
 DVC_SLURM_DVC_PUSH_ON_COMMIT=${DVC_SLURM_DVC_PUSH_ON_COMMIT:-NO}  # don't enqueue dvc push job by default, leave this to user later
-
 
 dvc_stage_from_dep () {
     echo "${1##*:}"
@@ -42,12 +42,15 @@ dvc_root="$(dvc root)"
 # TODO: separate script to source
 # Append dvc root to SLURM job ID (due to repo-level lock)
 dvc_stage_slurm_prefix="dvc"
-dvc_stage_slurm_suffix=$(python3 -c "import hashlib; print(hashlib.sha1(\"$(realpath "${dvc_root}")\".encode(\"utf-8\")).hexdigest()[:12])") # "$(realpath "${dvc_root}" | sha1sum | head -c 12)"
+dvc_stage_slurm_suffix=$(python3 -c "import hashlib; print(hashlib.sha1(\"$(realpath "${dvc_root}")\".encode(\"utf-8\")).hexdigest()[:12])") # equivalent to "$(echo -n $(realpath "${dvc_root}") | sha1sum | awk '{print $1}' | head -c 12)"
 get_dvc_slurm_job_name () { # compute SLURM job name for DVC stage/commit in $1
   echo "${dvc_stage_slurm_prefix}_$(dvc_stage_from_dep "$1")_${dvc_stage_slurm_suffix}"
 }
 
 dvc_slurm_stage_name="$(get_dvc_slurm_job_name "${dvc_stage_name}")"
+if [[ "${DVC_SLURM_DVC_OP_OUT_OF_REPO}" == "YES" ]]; then
+    dvc_slurm_out_of_repo_commit_name="$(get_dvc_slurm_job_name "out_of_repo_commit_${dvc_stage_name}")"
+fi
 dvc_slurm_commit_name="$(get_dvc_slurm_job_name op)"
 dvc_slurm_push_name="$(get_dvc_slurm_job_name op)"
 dvc_slurm_cleanup_name="$(get_dvc_slurm_job_name "cleanup_${dvc_stage_name}")"
@@ -118,7 +121,7 @@ for dep in "${dvc_stage_deps[@]}"; do
     if [ -n "${dep_slurm_stage_jobid}" ]; then
         dep_slurm_stage_jobids+=("${dep_slurm_stage_jobid}")
     elif [[ -f "${dep_dvc_dir}/${dep_dvc_stage_name}".dvc_pending || -f "${dep_dvc_dir}/${dep_dvc_stage_name}".dvc_started ]]; then  # stage is running # FIXME: what if dvc repro --single-item?
-        for i in $(seq 1 15); do  # wait until SLURM job id of dependency is found
+        for i in $(seq 1 5); do  # wait until SLURM job id of dependency is found
             dep_slurm_stage_jobid=$(squeue --name="${dep_slurm_stage_name}" --Format=JobID --sort=-S -h)
             if [ -n "${dep_slurm_stage_jobid}" ]; then # dependency is running
                 dep_slurm_stage_jobids+=("${dep_slurm_stage_jobid}")
@@ -127,7 +130,7 @@ for dep in "${dvc_stage_deps[@]}"; do
             sleep 1
         done
         if [ ! -n "${dep_slurm_stage_jobid}" ]; then
-          log_error "Error: Could not find SLURM job for ${dep} despite status pending or started - abort. Handle this stage manually - either by removing the status file $(ls "${dep_dvc_dir}/${dep_dvc_stage_name}".dvc_{pending,started}) and running 'dvc repro ${dep}' or by running 'dvc commit ${dep}'."
+            log_error "Error: Could not find SLURM job for ${dep} despite status pending or started - abort. Handle this stage manually by removing the status file $(ls "${dep_dvc_dir}/${dep_dvc_stage_name}".dvc_{pending,started}) and running 'dvc repro ${dep}' (or by running 'dvc commit ${dep}' if stage has completed)."
         fi
     # not a pending/started SLURM dependency - could be complete/committed/failed SLURM stage or no SLURM stage at all
     # if failed SLURM dependency, fail this one as well
@@ -159,13 +162,26 @@ else
     dvc_slurm_stage_deps=""
 fi
 
+get_dvc_slurm_job_ids() {  # args are $1 SLURM job name, $2 stage|commit|push, $3 DVC stage name 
+    while IFS=',' read -r job_id job_command; do
+        if [[ -n "${job_id}" && "${job_command}" ]]; then
+            read -r job_id <<<"${job_id}"
+            read -ra job_command <<<"${job_command}"
+            if [[ $(basename ${job_command[0]}) == sbatch_dvc_"$2".sh && ${job_command[1]} == $3 ]]; then
+                log "Found $2-job $1 for DVC stage $3 at ${job_id}."
+                echo ${job_id}
+            fi
+        fi
+    done <<<$(squeue --jobs "$1" --format="%.30A,%.1000o" --sort=-S -h)
+}
+
 # Make sure stage is not already to be run, running, to be committed or committing
 stage_jobid=$(squeue --name=${dvc_slurm_stage_name} --Format=JobID --sort=-S -h)
 if [[ -n "${stage_jobid}" ]]; then # stage submitted, but not yet completed
   log "DVC stage ${dvc_stage_name} seems to already be queued/running under jobid ${stage_jobid} - do not resubmit."
   exit 0
-elif [[ -f "${dvc_slurm_stage_name}".dvc_pending || -f "${dvc_slurm_stage_name}".dvc_started ]]; then  # stage is running
-    for i in $(seq 1 15); do  # wait until SLURM job id of dependency is found
+elif [[ -f "${dvc_stage_name}".dvc_pending || -f "${dvc_stage_name}".dvc_started ]]; then  # stage is running
+    for i in $(seq 1 5); do  # wait until SLURM job id of dependency is found
         stage_jobid=$(squeue --name="${dvc_slurm_stage_name}" --Format=JobID --sort=-S -h)
         if [ -n "${stage_jobid}" ]; then # dependency is running
             log "DVC stage ${dvc_stage_name} seems to already be queued/running under jobid ${stage_jobid} - do not resubmit."
@@ -173,80 +189,137 @@ elif [[ -f "${dvc_slurm_stage_name}".dvc_pending || -f "${dvc_slurm_stage_name}"
         fi
         sleep 1
     done
-    log_error "Error: Could not find SLURM job for ${stage_jobid} despite status pending or started. - abort."
-elif [ -f ${dvc_stage_name}.dvc_complete ]; then
-  # stage has completed, but is not yet committed
+    log_error "Error: Could not find SLURM job for ${dvc_stage_name} (job name ${dvc_slurm_stage_name}) despite status pending or started - abort. Handle this stage manually by removing the status file $(ls "${dvc_stage_name}".dvc_{pending,started}) and running 'dvc repro ${dvc_stage_name}' (or by running 'dvc commit ${dvc_stage_name}' if stage has completed)."
+elif [ -f ${dvc_stage_name}.dvc_complete ]; then  # stage has completed, but is not yet committed
   # (detected with a file created before completion of run, removed upon completion of commit)
-  log "DVC stage ${dvc_stage_name} completed successfully, but not yet committed - do not resubmit."
-  exit 0
-else
+  log "DVC stage ${dvc_stage_name} completed successfully, but not yet committed - do not resubmit. Commit/push jobs may still be running. Commit manually if needed with 'sbatch --job-name "${dvc_slurm_commit_name}" --dependency singleton --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_commit.sh" in-repo "${dvc_stage_name}"'"
+  commit_jobids=($(get_dvc_slurm_job_ids "${dvc_slurm_commit_name}" commit "${dvc_stage_name}"))
+  if [ "${#commit_jobids[@]}" -eq 0  ]; then 
+      log "DVC stage ${dvc_stage_name} completed successfully, but no commit job running - resubmitting commit job."
+      run_stage="NO"
+      run_commit="YES"
+  else  # commit job is running, do not resubmit
+      log "DVC stage ${dvc_stage_name} completed successfully and found commit job running at ${commit_jobids[@]} - do not resubmit."
+      exit 0
+  fi
+else  # stage was either committed since dvc repro invoked this (probably not possible?) or it must be re-run
   mv "${dvc_root}"/.dvc/tmp/rwlock{,.bak}  # see comment above (is this really necessary?)
   stage_status="$(dvc status --json ${dvc_stage_name})"
   mv "${dvc_root}"/.dvc/tmp/rwlock{.bak,}
   if [[ "${stage_status}" == "{}" ]]; then
-      log "DVC stage ${dvc_stage_name} already committed - do not resubmit."
-      exit 0
+      push_jobids=($(get_dvc_slurm_job_ids "${dvc_slurm_push_name}" push "${dvc_stage_name}"))
+      if [ "${#push_jobids[@]}" -eq 0  ]; then 
+          log "DVC stage ${dvc_stage_name} successfully committed in the meantime, but no push job running - optionally resubmitting push job."
+          run_stage="NO"
+          run_commit="NO"
+          run_push="YES"
+      else  # push job is running, do not resubmit
+          log "DVC stage ${dvc_stage_name} successfully committed in the meantime and found push job running at ${push_jobids[@]} - do not resubmit."
+          exit 0
+      fi
   else
-      log "Cannot find running/committing stage ${dvc_stage_name} - submitting."
+      log "Cannot find running/committed stage ${dvc_stage_name} - submitting it."
+      run_stage="YES"
   fi
 fi
 
-log "Launching asynchronous stage ${dvc_stage_name} with SLURM"
-
-# Launch SLURM sbatch jobs
-for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage.py
-    ls -I stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc run --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
-    mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit to succeed
-done
-
-# Remove status/commit/cleanup logs from previous execution
-rm ${dvc_stage_name}.dvc_{pending,started,complete,failed} || true
-rm dvc_sbatch.dvc_commit.*.{out,err} || true
-rm dvc_sbatch.dvc_push.*.{out,err} || true
-rm slurm_enqueue_dvc_push_${dvc_stage_name}.sh || true
-rm dvc_sbatch.${dvc_slurm_cleanup_name}.*.{out,err} || true
-
-stage_jobid=$(sbatch --parsable --job-name "${dvc_slurm_stage_name}"  ${dvc_slurm_stage_deps} \
-${dvc_slurm_opts_stage_job} "$(dirname "$0")/sbatch_dvc_stage.sh" "${dvc_stage_name}" "$@")
-echo "$@" > ${dvc_stage_name}.dvc_pending && fsync ${dvc_stage_name}.dvc_pending
-echo ${stage_jobid} > ${dvc_stage_name}.dvc_stage_jobid # useful to figure out run job id
-
-commit_jobid=$(sbatch --parsable --job-name "${dvc_slurm_commit_name}" --dependency afterok:${stage_jobid},singleton \
---nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_commit.sh" "${dvc_stage_name}")
-echo ${commit_jobid} > ${dvc_stage_name}.dvc_commit_jobid # useful to figure out which commit job (all named equally) commits this stage
+log_submitted_jobs=()
 if [[ "${DVC_SLURM_DVC_OP_NO_HOLD}" != "YES" ]]; then  # YES is potentially unsafe, the user invoking this must be aware of pot race condition
-    scontrol hold ${commit_jobid}
-    log "Put dvc commit job ${commit_jobid} on hold - use 'scontrol release ${commit_jobid}' to selectively unblock it or '$(dirname $0)/slurm_jobs.sh release commit' to unblock all commit jobs."
+    dvc_slurm_hold_opts="--hold"
+else
+    dvc_slurm_hold_opts=""
 fi
 
-cleanup_jobid=$(sbatch --parsable --job-name "${dvc_slurm_cleanup_name}" --dependency afternotok:${stage_jobid} \
---nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_cleanup.sh" "${dvc_stage_name}" "${dvc_stage_outs[@]}")
-echo ${cleanup_jobid} > ${dvc_stage_name}.dvc_cleanup_jobid
+# application stage
+if [[ "${run_stage}" == "YES" ]]; then
+    log "Launching asynchronous stage ${dvc_stage_name} with SLURM"
+    
+    # Launch SLURM sbatch jobs
 
+    # Clean up of any left-overs from previous run TODO: put this into sbatch_dvc_stage.sh as well (in case of requeue)
+    for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage.py
+        ls -I stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc run --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
+        mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit to succeed
+    done
+    
+    # Remove status/commit/cleanup logs from previous execution
+    rm ${dvc_stage_name}.dvc_{pending,started,complete,failed} || true
+    rm dvc_sbatch.dvc_commit.*.{out,err} || true
+    rm dvc_sbatch.dvc_push.*.{out,err} || true
+    rm slurm_enqueue_dvc_push_${dvc_stage_name}.sh || true
+    rm dvc_sbatch.${dvc_slurm_cleanup_name}.*.{out,err} || true
+    
+    stage_jobid=$(sbatch --parsable --job-name "${dvc_slurm_stage_name}" ${dvc_slurm_stage_deps} ${dvc_slurm_hold_opts} ${dvc_slurm_opts_stage_job} "$(dirname "$0")/sbatch_dvc_stage.sh" "${dvc_stage_name}" "$@")
+    echo "$@" > ${dvc_stage_name}.dvc_pending && fsync ${dvc_stage_name}.dvc_pending
+    echo ${stage_jobid} > ${dvc_stage_name}.dvc_stage_jobid # useful to figure out run job id
+    log_submitted_jobs+=("stage: ${stage_jobid}")
 
-if [[ "${DVC_SLURM_DVC_PUSH_ON_COMMIT}" == "YES" ]]; then
-    push_jobid=$(sbatch --parsable --job-name "${dvc_slurm_push_name}" --dependency afterok:${commit_jobid},singleton \
-    --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_push.sh" "${dvc_stage_name}")
-    echo ${push_jobid} > ${dvc_stage_name}.dvc_push_jobid # useful to figure out which push job (all named equally) commits this stage
-    if [[ "${DVC_SLURM_DVC_OP_NO_HOLD}" != "YES" ]]; then  # YES is potentially unsafe, the user invoking this must be aware of pot race condition
-        scontrol hold ${push_jobid}
-        log "Put dvc push job ${push_jobid} on hold - use 'scontrol release ${push_jobid}' to selectively unblock it or '$(dirname $0)/slurm_jobs.sh release push' to unblock all push jobs."
+    cleanup_jobid=$(sbatch --parsable --job-name "${dvc_slurm_cleanup_name}" --dependency afternotok:${stage_jobid} \
+    --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_cleanup.sh" "${dvc_stage_name}" "${dvc_stage_outs[@]}")
+    echo ${cleanup_jobid} > ${dvc_stage_name}.dvc_cleanup_jobid
+    log_submitted_jobs+=("cleanup: ${cleanup_jobid}")
+fi
+
+# dvc commit
+if [[ "${run_stage}" == "YES" || "${run_commit}" == "YES" ]]; then
+    if [[ "${DVC_SLURM_DVC_OP_OUT_OF_REPO}" == "YES" ]]; then  # this feature currently doesn't speed up commits
+        if [ -n "${stage_jobid}" ]; then
+            dvc_slurm_commit_deps="--dependency afterok:${stage_jobid}"
+        else
+            dvc_slurm_commit_deps=""
+        fi
+        out_of_repo_commit_jobid=$(sbatch --parsable --job-name "${dvc_slurm_out_of_repo_commit_name}" ${dvc_slurm_commit_deps} ${dvc_slurm_hold_opts} --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_commit.sh" out-of-repo-prepare "${dvc_stage_name}")
+        echo ${out_of_repo_commit_jobid} > ${dvc_stage_name}.dvc_commit_out_of_repo_jobid
+        log_submitted_jobs+=("out-of-repo-commit: ${out_of_repo_commit_jobid}")
+        dvc_slurm_commit_deps="--dependency afterok:${out_of_repo_commit_jobid},singleton"
+        commit_jobid=$(sbatch --parsable --job-name "${dvc_slurm_commit_name}" ${dvc_slurm_commit_deps} ${dvc_slurm_hold_opts} --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_commit.sh" out-of-repo-commit "${dvc_stage_name}")
+    else
+        if [ -n "${stage_jobid}" ]; then
+            dvc_slurm_commit_deps="--dependency afterok:${stage_jobid},singleton"
+        else
+            dvc_slurm_commit_deps="--dependency singleton"
+        fi
+        commit_jobid=$(sbatch --parsable --job-name "${dvc_slurm_commit_name}" ${dvc_slurm_commit_deps} ${dvc_slurm_hold_opts} --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_commit.sh" in-repo "${dvc_stage_name}")
     fi
-    log "Submitted all jobs for stage ${dvc_stage_name} (stage: ${stage_jobid}, commit: ${commit_jobid} (on hold), push: ${push_jobid} (on hold), cleanup: ${cleanup_jobid})."
-else # write push op to a script for delayed manual submission through sbatch (before stage termination or if DVC jobs keep being run)
-    push_script="slurm_enqueue_dvc_push_${dvc_stage_name}.sh"
-    echo """#!/usr/bin/env bash
+    echo ${commit_jobid} > ${dvc_stage_name}.dvc_commit_jobid  # useful to figure out which commit job (all named equally) commits this stage
+    log_submitted_jobs+=("commit: ${commit_jobid}")
+fi
+
+# dvc push
+if [[ "${run_stage}" == "YES" || "${run_commit}" == "YES" || "${run_push}" == "YES" ]]; then
+    if [ -n "${commit_jobid}" ]; then
+        dvc_slurm_push_deps="--dependency afterok:${commit_jobid},singleton"
+    else
+        dvc_slurm_push_deps="--dependency singleton"
+    fi
+    if [[ "${DVC_SLURM_DVC_PUSH_ON_COMMIT}" == "YES" ]]; then
+        # TODO: out-of-repo version
+        push_jobid=$(sbatch --parsable --job-name "${dvc_slurm_push_name}" ${dvc_slurm_push_deps} ${dvc_slurm_hold_opts} --nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")/sbatch_dvc_push.sh" in-repo "${dvc_stage_name}")
+        echo ${push_jobid} > ${dvc_stage_name}.dvc_push_jobid # useful to figure out which push job (all named equally) commits this stage
+        log_submitted_jobs+=("push: ${push_jobid}")
+    else # write push op to a script for delayed manual submission through sbatch (before stage termination or if DVC jobs keep being run)
+        push_script="slurm_enqueue_dvc_push_${dvc_stage_name}.sh"
+        echo """#!/usr/bin/env bash
 
 set -euxo pipefail
 
 cd "\$\(dirname "\$0"\)"
-push_jobid=\$(sbatch --parsable --job-name "${dvc_slurm_push_name}" --dependency afterok:${commit_jobid},singleton \
---nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")"/sbatch_dvc_push.sh "${dvc_stage_name}")
+push_jobid=\$(sbatch --parsable --job-name "${dvc_slurm_push_name}" ${dvc_slurm_push_deps} \
+--nodes 1 --ntasks 1 ${dvc_slurm_opts_dvc_job} "$(dirname "$0")"/sbatch_dvc_push.sh in-repo "${dvc_stage_name}")
 echo \${push_jobid} > ${dvc_stage_name}.dvc_push_jobid # useful to figure out which push job (all named equally) commits this stage
 
 """ > ${push_script}
-    chmod u+x ${push_script}
-    log "Submitted all jobs for stage ${dvc_stage_name} (stage: ${stage_jobid}, commit: ${commit_jobid} (on hold), cleanup: ${cleanup_jobid})."
-    log "Submit push with ${push_script}."
+        chmod u+x ${push_script}
+        log "Submit push job for ${dvc_stage_name} manually with ${push_script}."
+    fi
+fi
+
+log_submitted_jobs=$(printf ", %s" "${log_submitted_jobs[@]}")
+log "Submitted all jobs for stage ${dvc_stage_name} (${log_submitted_jobs:2})."
+
+if [[ "${DVC_SLURM_DVC_OP_NO_HOLD}" != "YES" ]]; then  # YES is potentially unsafe, the user invoking this must be aware of pot race condition
+    log "All jobs submitted on hold to enable further DVC usage. When ready, use 'scontrol release <job-id1> <job-id2> ...' to selectively unblock invidual jobs or '$(dirname $0)/slurm_jobs.sh release (stage|commit|push)' to unblock all jobs of particular type in this DVC repo."
+else
+    log "Warning: None of the jobs put on hold. Running more DVC commands may cause job failure (commit/push) due to conflict for $(dvc root)/.dvc/tmp/rwlock and induce unintentional hash recomputations. If you need to run further dvc commands, first put all your DVC SLURM jobs in this repo on hold using slurm_jobs.sh."
 fi
 

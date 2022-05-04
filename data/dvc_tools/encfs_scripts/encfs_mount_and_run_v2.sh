@@ -101,7 +101,7 @@ if [[ ${MPI_LOCAL_RANK} == 0 ]]; then
     echo ${PASSWORD} | "${ENCFS_BIN}" -o allow_root,max_write=1048576,big_writes --nocache -S "${ENCFS_ROOT}" "${MOUNT_DIR}"
 
     echo ${MPI_LOCAL_RANK} > ${ENCFS_LOCAL_SYNC_FILE}
-    fsync ${ENCFS_LOCAL_SYNC_FILE}
+    [[ -x "$(command -v fsync)" ]] && fsync ${ENCFS_LOCAL_SYNC_FILE} || true  # FIXME: fsync-utility-alternative?
     log "Rank ${MPI_RANK} on $(hostname): Successfully mounted encfs-dir at ${MOUNT_DIR} and wrote to sync-file ${ENCFS_LOCAL_SYNC_FILE} - starting encfs-job"
 else
     log "Rank ${MPI_RANK} on $(hostname): Waiting for encfs-mount at ${MOUNT_DIR} (sync-file ${ENCFS_LOCAL_SYNC_FILE})."
@@ -140,7 +140,7 @@ if [[ ${MPI_LOCAL_RANK} == 0 ]]; then
     rmdir "${MOUNT_DIR}"
     rm ${ENCFS_LOCAL_SYNC_FILE} ${ENCFS_LOCAL_SYNC_FILE}.lock
 else
-    while ! flock --nonblock ${ENCFS_LOCAL_SYNC_FILE}.lock -c "echo ${MPI_LOCAL_RANK} >> ${ENCFS_LOCAL_SYNC_FILE}; fsync ${ENCFS_LOCAL_SYNC_FILE}"; do
+    while ! flock --nonblock ${ENCFS_LOCAL_SYNC_FILE}.lock -c "echo ${MPI_LOCAL_RANK} >> ${ENCFS_LOCAL_SYNC_FILE}; [[ -x "$(command -v fsync)" ]] && fsync ${ENCFS_LOCAL_SYNC_FILE} || true"; do  # FIXME: fsync-utility-alternative?
         sleep 1
     done
 fi

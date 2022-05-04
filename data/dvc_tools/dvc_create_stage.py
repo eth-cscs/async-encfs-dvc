@@ -1,5 +1,20 @@
 #!/usr/bin/env python
 
+"""Generate DVC stage from a parameterized app-definition in YAML that is instantiated with commandline arguments.
+
+Two different ways of launching this:
+- first instantiate dvc_app.yaml (use '--show-opts' for completion suggestions), then generate DVC stage
+- directly generate DVC stage from a preprocessed dvc_app.yaml
+
+Based on dvc_app.yaml this script generates a DVC stage by running the equivalent of
+```
+  dvc run --no-exec --name <stage-name> --deps <host-input-directory> \
+      --outs(-persist) <host-output-directory>/output ... (<slurm-command>/<container-image>/<encfs-command>)
+```
+The execution can then later be done with 'dvc repro <stage-name>' (use '--no-commit' with SLURM, and
+upon successful completion 'dvc commit').
+"""
+
 import argparse
 import subprocess as sp
 import yaml
@@ -13,18 +28,6 @@ import re
 import glob
 import shutil
 from jinja2 import Environment, BaseLoader, meta, StrictUndefined
-
-# This script generates the dvc stage by running
-# ```
-#   dvc run --no-exec --name <stage-name> --deps <host-input-directory> \
-#       --outs(-persist) <host-output-directory>/output <container-image>
-# ```
-# The execution can then later be done with `dvc repro -s --no-commit <stage-name>` and
-# upon successful completion dvc commit (built into to the instantiated container scripts)
-
-# Two different ways of launching this:
-# - first assemble dvc_app.yaml (with completion suggestions), then DVC stage
-# - directly generate DVC stage from existing dvc_app.yaml
 
 
 def run_shell_cmd(command):
@@ -154,7 +157,7 @@ def find_undeclared_variables(template_key, template):
                 for v in meta.find_undeclared_variables(env.parse(template))}
 
 
-def visit_yaml_undeclared_variables(tree_key, yaml_tree): # TODO: document this function
+def visit_yaml_undeclared_variables(tree_key, yaml_tree):  # TODO: document this function
     # YAML visitor
     undeclared_variables = dict()
     for k, v in yaml_tree.items():
@@ -239,7 +242,8 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
     for stage_arg, occurrences in stage_args.items():
         if stage_arg not in ['app_yaml', 'stage', 'run_label']:
             if f"--{stage_arg.replace('_','-')}" in sys.argv:
-                occ_joined_paths = [os.path.join(*[os.path.join(*el) if isinstance(el, list) else el for el in occ['value']])
+                occ_joined_paths = [os.path.join(*[os.path.join(*el) if isinstance(el, list) else el
+                                                   for el in occ['value']])
                                     for occ in occurrences]
 
                 parser.add_argument(f"--{stage_arg.replace('_','-')}", type=str,
@@ -254,7 +258,8 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
     for app_arg, occurrences in app_args.items():
         if app_arg not in ['app_yaml', 'stage', 'run_label']:
             if f"--{app_arg.replace('_','-')}" in sys.argv:
-                occ_joined_paths = [os.path.join(*[os.path.join(*el) if isinstance(el, list) else el for el in occ['value']])
+                occ_joined_paths = [os.path.join(*[os.path.join(*el) if isinstance(el, list) else el
+                                                   for el in occ['value']])
                                     for occ in occurrences]
 
                 parser.add_argument(f"--{app_arg.replace('_','-')}", type=str,
@@ -300,19 +305,22 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
             if stage_arg in fixed_args or stage_arg in ['run_label']:
                 continue
 
-            if stage_arg in stage_args_top_order and len(stage_args_top_order[stage_arg]) > 0: # first fix dependency
+            if stage_arg in stage_args_top_order and len(stage_args_top_order[stage_arg]) > 0:  # first fix dependency
                 continue
 
             # May need to use encfs-mount resolution here in the future
             data_mount = full_app_yaml['host_data']['mount']['data']['origin']
 
-            occ_joined_paths = [os.path.join(data_mount, *[os.path.join(*el) if isinstance(el, list) else el for el in occ['value']])
+            occ_joined_paths = [os.path.join(data_mount, *[os.path.join(*el) if isinstance(el, list)
+                                                           else el for el in occ['value']])
                                 for occ in occurrences]
 
             # find common ancestor path, glob path, read with re.search and suggestions
             occ_joined_glob, occ_joined_regex = \
-                sorted([(get_expanded_path_template(occ_path, {k: '*' if k not in fixed_args else fixed_args[k] for k in stage_args.keys()}),  # FIXME: can this be replaced by get_expanded_path?
-                         get_expanded_path_template(occ_path, {k: r'(?P<' + k + r'>[\.\w-]+/?)' if k not in fixed_args else fixed_args[k] for k in stage_args.keys()}))
+                sorted([(get_expanded_path_template(occ_path, {k: '*' if k not in fixed_args else fixed_args[k]
+                                                               for k in stage_args.keys()}),  # can this be replaced by get_expanded_path?
+                         get_expanded_path_template(occ_path, {k: r'(?P<' + k + r'>[\.\w-]+/?)' if k not in fixed_args
+                                                               else fixed_args[k] for k in stage_args.keys()}))
                         for occ_path in occ_joined_paths], reverse=True)[0]
             stage_option_candidates = []
 
@@ -390,6 +398,8 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
             encfs_root_dir = mount_config['origin']
             encfs_mounted_dir = None
             encfs_mounted_dir_suffix = stage_name + '_' + \
+                                       hashlib.sha1(dvc_dir
+                                                    .encode("utf-8")).hexdigest()[:12] + '_' + \
                                        hashlib.sha1(full_app_yaml['host_data']['dvc_root']
                                                     .encode("utf-8")).hexdigest()[:12]
             for target in mount_config['custom_target']:
@@ -437,7 +447,8 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     if full_app_yaml['app']['container_engine'] == 'none':
         container_command = "bash -c"
     elif full_app_yaml['app']['container_engine'] == 'docker':
-        container_engine_opts = full_app_yaml['app'].get('container_opts', {}) # dropped -u \$(id -u \${USER}):\$(id -g \${USER}) ' + \
+        container_engine_opts = full_app_yaml['app'].get('container_opts', {})
+        # dropped -u \$(id -u \${USER}):\$(id -g \${USER})
         container_command = 'docker run --rm ' + \
                           ' '.join([f"-v {mount_cmd(v['host'], is_host=True)}:{mount_cmd(v['container'], is_host=False)}"
                                     for v in mounts.values()]) + ' ' + \
@@ -486,7 +497,6 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
         #   dvc repro --no-commit <stage-name>
         # to execute this stage. Checks all data dependencies to be ready beforehand and will
         # not submit if SLURM stage job already running/about to be committed.
-        # FIXME: probably erroneous path to slurm_scripts
         container_command = f"{os.path.join(dvc_utils_rel_to_dvc_dir, 'slurm_scripts/slurm_enqueue.sh')} " \
                             f"{stage_name} {os.path.basename(args.app_yaml)} {args.stage} {container_command}"
     else:
@@ -546,7 +556,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
            f"\"set -o pipefail; mkdir -p {' '.join(host_stage_rel_output_deps)} && "
            f"{container_command} \\\"{script} {command_line_options}\\\" 2>&1 | tee {out_log_file}\" ",
            shell=True, check=True)
-    # TODO: mkdir host_stage_rel_output_deps only when not using slurm (as already integrated in dvc_run_sbatch (could be moved out again, though))
+    # mkdir host_stage_rel_output_deps only required when not using slurm (as already integrated in dvc_run_sbatch)
 
 
 if __name__ == '__main__':

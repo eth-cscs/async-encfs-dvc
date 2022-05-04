@@ -23,11 +23,11 @@ app:
           --nodes: 1
           --ntasks: 1
           --constraint: gpu
-          --time: 00:01:00
+          --time: '00:01:00'
         dvc:
           --cpus-per-task: 24
           --constraint: mc
-          --time: 00:01:00
+          --time: '00:01:00'
         all:
           --account: csstaff
       script: [*code_root, inference.sh]
@@ -49,11 +49,11 @@ app:
           --nodes: 2
           --ntasks: 4
           --constraint: gpu
-          --time: 00:01:00
+          --time: '00:01:00'
         dvc:
           --cpus-per-task: 24
           --constraint: mc
-          --time: 00:01:00
+          --time: '00:01:00'
         all:
           --account: csstaff
       script: [*code_root, training.sh]

@@ -24,13 +24,14 @@ assert mount_config['type'] == 'encfs'
 
 encfs_root_dir = mount_config['origin']
 encfs_mounted_dir = None
-# encfs_mounted_dir_suffix = hashlib.sha1(os.path.abspath(host_dvc_root).encode("utf-8")).hexdigest()[:12]
+
+encfs_mounted_dir_suffix = hashlib.sha1(os.path.abspath(host_dvc_root).encode("utf-8")).hexdigest()[:12]
 hostname = socket.gethostname()
 for target in mount_config['custom_target']:
     if len([machine for machine in target['machine'] if re.search(machine, hostname)]) > 0:
-        encfs_mounted_dir = target['target']  # + '_' + encfs_mounted_dir_suffix
+        encfs_mounted_dir = target['target']  + '_' + encfs_mounted_dir_suffix
         break
 if encfs_mounted_dir is None:
-    encfs_mounted_dir = mount_config['default_target']  # + '_' + encfs_mounted_dir_suffix
+    encfs_mounted_dir = mount_config['default_target']  + '_' + encfs_mounted_dir_suffix
 
 print('\n'.join([os.path.join(host_dvc_root, d) for d in [encfs_root_dir, encfs_mounted_dir]]), end='')

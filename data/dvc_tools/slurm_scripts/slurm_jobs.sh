@@ -33,61 +33,45 @@ get_dvc_slurm_job_name () { # compute SLURM job name for DVC stage/commit in $1
   echo "${dvc_stage_slurm_prefix}_$(dvc_stage_from_dep "$1")_${dvc_stage_slurm_suffix}"
 }
 
-
 dvc_slurm_put_jobs_on_hold () {
-    dvc_job_name="$(get_dvc_slurm_job_name op)"
-    while IFS=',' read -r job_id job_command job_reason; do
+    dvc_job_name="$(get_dvc_slurm_job_name ".*")"
+    while IFS=',' read -r job_id job_name job_status job_command job_reason; do
         if [[ -n "${job_id}" && -n "${job_command}" && -n "${job_reason}" ]]; then
             read -r job_id <<<"${job_id}"
+            read -r job_name <<<"${job_name}"
+            read -r job_status <<<"${job_status}"
             read -ra job_command <<<"${job_command}"
             read -r job_reason <<<"${job_reason}"
-            if [[ $(basename ${job_command[0]}) == sbatch_dvc_"$1".sh && "${job_reason}" != JobHeldUser ]]; then
-                log "Warning: Potential race condition due to ${dvc_job_name}[$(basename "${job_command[0]}")] job pending (reason ${job_reason} != JobHeldUser) at ${job_id} (for $(dvc root)/.dvc/tmp/rwlock). Putting on hold (release using '$(dirname "$0")/dvc_slurm_jobs.sh release $1')."
-                scontrol hold ${job_id} # or: scontrol update JobID=${job_id} StartTime=now+300  # for 5 min delay
-            fi
-        fi
-    done <<<$(squeue -u ${USER} --name="${dvc_job_name}" --format="%.30A,%.200o,%.30r" --sort=-S -h -t PENDING)
-
-    while IFS=',' read -r job_id job_command job_reason; do
-        if [[ -n "${job_id}" && -n "${job_command}" && -n "${job_reason}" ]]; then
-            read -r job_id <<<"${job_id}"
-            read -ra job_command <<<"${job_command}"
-            read -r job_reason <<<"${job_reason}"
-            if [[ $(basename ${job_command[0]}) == sbatch_dvc_"$1".sh ]]; then
-                log "Warning: Potential race condition due to ${dvc_job_name}[$(basename "${job_command[0]}")] job running (reason ${job_reason} != JobHeldUser) at ${job_id} (for $(dvc root)/.dvc/tmp/rwlock). Requeueing on hold (release using '$(dirname "$0")/dvc_slurm_jobs.sh release $1')."
-                scontrol requeuehold ${job_id} # or: scontrol requeue ${job_id} && scontrol update JobID=${job_id} StartTime=now+300  # for 5 min dely
-            fi
-        fi
-    done <<<$(squeue -u ${USER} --name="${dvc_job_name}" --format="%.30A,%.200o,%.30r" --sort=-S -h -t RUNNING)
-    
-    while IFS=',' read -r job_id job_command job_reason job_username; do
-        if [[ -n "${job_id}" && -n "${job_command}" && -n "${job_reason}" && -n "${job_username}" ]]; then
-            read -r job_id <<<"${job_id}"
-            read -ra job_command <<<"${job_command}"
-            read -r job_reason <<<"${job_reason}"
-            read -r job_username <<<"${job_username}"
-            if [[ $(basename ${job_command[0]}) == sbatch_dvc_"$1".sh ]]; then
-                if [[ "${job_username}" != "${USER}" && "${job_reason}" != JobHeldUser && "${job_reason}" != "job requeued in held" ]]; then
-                    log_error "Error: User ${job_username} has a job ${dvc_job_name}[$(basename "${job_command[0]}")] pending/running at ${job_id} in non-held/requeued state (reason ${job_reason}). Cannot hold/requeue all ${dvc_job_name}[$(basename "${job_command[0]}")] jobs - abort."
+            if [[ "${job_name}" =~ ${dvc_job_name} && $(basename ${job_command[0]}) == "sbatch_dvc_$1.sh" && "${job_reason}" != JobHeldUser ]]; then
+                if [[ ${job_status} == PENDING ]]; then
+                    log "Putting pending job ${job_name}[$(basename "${job_command[0]}")] (reason ${job_reason} != JobHeldUser) at ${job_id} on hold (release using '$(dirname "$0")/slurm_jobs.sh release $1')."
+                    scontrol hold ${job_id} # or: scontrol update JobID=${job_id} StartTime=now+300  # for 5 min delay
+                elif [[ ${job_status} == RUNNING ]]; then
+                    log "Requeuing on hold running job ${job_name}[$(basename "${job_command[0]}")] (reason ${job_reason} != JobHeldUser) at ${job_id} on hold (release using '$(dirname "$0")/slurm_jobs.sh release $1')."
+                    scontrol requeuehold ${job_id}
+                else
+                    log "Ignoring job ${job_name}[$(basename "${job_command[0]}")] at ${job_id} with status ${job_status}."
                 fi
             fi
         fi
-    done <<<$(squeue --name="${dvc_job_name}" --format="%.30A,%.200o,%.30r,%.30u" --sort=-S -h -t RUNNING)
+    done <<<$(squeue -u ${USER} --format="%.30A,%.200j,%30T,%.200o,%.30r" --sort=-S -h)
+    log "All jobs of ${USER} held. To make sure that no other users run DVC commands on this repo use '$(dirname "$0")/slurm_jobs.sh show $1'."
 }
 
 dvc_slurm_release_jobs () {
-    dvc_job_name="$(get_dvc_slurm_job_name op)"
-    while IFS=',' read -r job_id job_command job_reason; do
+    dvc_job_name="$(get_dvc_slurm_job_name ".*")"
+    while IFS=',' read -r job_id job_name job_command job_reason; do
         if [[ -n "${job_id}" && "${job_command}" && -n "${job_reason}" ]]; then
             read -r job_id <<<"${job_id}"
+            read -r job_name <<<"${job_name}"
             read -ra job_command <<<"${job_command}"
             read -r job_reason <<<"${job_reason}"
-            if [[ $(basename ${job_command[0]}) == sbatch_dvc_"$1".sh ]]; then
-                log "Releasing job ${dvc_job_name}[$(basename "${job_command[0]}")] (reason ${job_reason}) at ${job_id}."
+            if [[ "${job_name}" =~ ${dvc_job_name} && $(basename ${job_command[0]}) == "sbatch_dvc_$1.sh" ]]; then
+                log "Releasing job ${job_name}[$(basename "${job_command[0]}")] (reason ${job_reason}) at ${job_id}."
                 scontrol release ${job_id}
             fi
         fi
-    done <<<$(squeue -u ${USER} --name="${dvc_job_name}" --format="%.30A,%.200o,%.30r" --sort=-S -h)
+    done <<<$(squeue -u ${USER} --format="%.30A,%.200j,%.200o,%.30r" --sort=-S -h)
 }
 
 
@@ -106,7 +90,7 @@ dvc_slurm_show_jobs () {
     done <<<$(squeue -u ${USER} --format="%.30A,%.200j,%.200o" --sort=-S -h)
     dvc_job_ids="$(printf ",%s" "${dvc_job_ids[@]}")"
     set -x
-    squeue --job "${dvc_job_ids:1}" --format="%.15u %.15A %.20r %.50j %.150Z" --sort=-S 
+    squeue --job "${dvc_job_ids:1}" --format="%.15u %.15A %.10r %.10M %.10L %.60j %.130Z" --sort=-S 
 }
 
 

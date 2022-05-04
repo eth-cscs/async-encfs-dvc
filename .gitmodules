@@ -1,5 +1,5 @@
 [submodule "openstack"]
-	path = openstack
+	path = data/dvc_tools/openstack
 	url = git@github.com:eth-cscs/openstack.git
 [submodule "dvc_utils/encfs_scripts/encfs"]
 	path = data/dvc_tools/encfs_scripts/encfs

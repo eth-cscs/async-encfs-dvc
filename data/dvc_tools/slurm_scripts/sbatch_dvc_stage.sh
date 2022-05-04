@@ -10,6 +10,8 @@ set -euxo pipefail
 dvc_stage_name="$1"
 shift
 
+echo "TODO: Clean up of any left-overs from previous run (in case of requeue)"  # TODO:
+
 echo "Running dvc stage ${SLURM_JOB_NAME}."
 mv "${dvc_stage_name}".dvc_pending "${dvc_stage_name}".dvc_started && fsync "${dvc_stage_name}".dvc_started  # could protect by flock
 time srun --wait=300 "$@"  # --wait to allow more asymmetric task completion than 30 sec, especially with encfs (TODO: separate srun from sbatch options in dvc_app.yaml)

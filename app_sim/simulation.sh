@@ -59,7 +59,7 @@ SIMULATION_OUTPUT_FILES=()
 for file_num in $(seq 0 $((SIMULATION_OUTPUT_FILE_NUM -1 ))); do
   SIMULATION_OUTPUT_FILES+=("${SIMULATION_OUTPUT}/sim.${MPI_RANK}.${file_num}.dat")
 done
-log "Running simulation on rank ${MPI_RANK}, writing output to ${SIMULATION_OUTPUT_FILES}."
+log "Running simulation on rank ${MPI_RANK}, writing output to ${SIMULATION_OUTPUT_FILES[0]} (first file, total number of files: ${#SIMULATION_OUTPUT_FILES[@]})."
 
 set -x
 for output_file in "${SIMULATION_OUTPUT_FILES[@]}"; do
