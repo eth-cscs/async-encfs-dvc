@@ -92,7 +92,7 @@ LOG_FILE="${LOG_FILE/\{MPI_RANK\}/"${MPI_RANK}"}"
 
 if [[ ${MPI_LOCAL_RANK} == 0 ]]; then
     log "Rank ${MPI_RANK} on $(hostname): Running encfs-mount at ${MOUNT_DIR}."
-    mount | grep "${MOUNT_DIR}" && "${ENCFS_BIN}" -u "${MOUNT_DIR}" && sleep 3 # should never be needed
+    mount | grep "${MOUNT_DIR}" && "${ENCFS_BIN}" -u "${MOUNT_DIR}" && sleep 3  # clean up potentially incompletely unmounted dir from previous crash
     ls_encfs_root=$(ls -lh "${ENCFS_ROOT}")
     log "${ls_encfs_root}"
     rm -Rf "${MOUNT_DIR}"
@@ -141,6 +141,10 @@ if [[ ${MPI_LOCAL_RANK} == 0 ]]; then
     rm ${ENCFS_LOCAL_SYNC_FILE} ${ENCFS_LOCAL_SYNC_FILE}.lock
 else
     while ! flock --nonblock ${ENCFS_LOCAL_SYNC_FILE}.lock -c "echo ${MPI_LOCAL_RANK} >> ${ENCFS_LOCAL_SYNC_FILE}; [[ -x "$(command -v fsync)" ]] && fsync ${ENCFS_LOCAL_SYNC_FILE} || true"; do  # FIXME: fsync-utility-alternative?
+        sleep 1
+    done
+    while mount | grep "${MOUNT_DIR}" ; do
+        # wait on all processors until the directory is cleanly unmounted (ensures that the umount operation on LOCAL_RANk==0 has finished)
         sleep 1
     done
 fi
