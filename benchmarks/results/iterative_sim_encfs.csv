@@ -1,0 +1,22 @@
+ per-rank file count , individual file size , per-rank payload , aggregate payload , stage time (SLURM step) 
+       1             ,     1 GB             ,  1 GB            ,    16 GB          ,   0m 39.529s             
+       1             ,     2 GB             ,  2 GB            ,    32 GB          ,   1m 17.725s             
+       1             ,     4 GB             ,  4 GB            ,    64 GB          ,   2m 28.160s             
+       1             ,     8 GB             ,  8 GB            ,   128 GB          ,   4m 57.152s             
+       1             ,    16 GB             , 16 GB            ,   256 GB          ,   9m 38.297s             
+       1             ,    32 GB             , 32 GB            ,   512 GB          ,  18m 47.857s             
+       1             ,    64 GB             , 64 GB            , 1.024 TB          ,  37m 27.673s             
+    1000             ,     1 MB             ,  1 GB            ,    16 GB          ,   0m 55.533s              
+    1000             ,     2 MB             ,  2 GB            ,    32 GB          ,   1m 15.242s              
+    1000             ,     4 MB             ,  4 GB            ,    64 GB          ,   2m 49.697s              
+    1000             ,     8 MB             ,  8 GB            ,   128 GB          ,   4m 59.661s              
+    1000             ,    16 MB             , 16 GB            ,   256 GB          ,   9m 46.761s              
+    1000             ,    32 MB             , 32 GB            ,   512 GB          ,  19m 52.775s              
+    1000             ,    64 MB             , 64 GB            , 1.024 TB          ,  38m 53.677s              
+   10000             ,   100 KB             ,  1 GB            ,    16 GB          ,   1m 57.455s             
+   10000             ,   200 KB             ,  2 GB            ,    32 GB          ,   2m 35.338s             
+   10000             ,   400 KB             ,  4 GB            ,    64 GB          ,   3m 27.868s             
+   10000             ,   800 KB             ,  8 GB            ,   128 GB          ,   5m 44.948s             
+   10000             , 1.600 MB             , 16 GB            ,   256 GB          ,  10m  5.082s             
+   10000             , 3.200 MB             , 32 GB            ,   512 GB          ,  18m 47.612s             
+   10000             , 6.400 MB             , 64 GB            , 1.024 TB          ,  44m 10.290s             

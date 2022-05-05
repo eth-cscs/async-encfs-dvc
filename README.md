@@ -16,6 +16,7 @@ The purpose of this project is to provide a base platform that can be customized
 
 More background on data versioning with DVC stages is available in the [documentation](https://dvc.org/doc/use-cases/versioning-data-and-model-files/tutorial#automating-capturing) on `dvc run` (`dvc exp` is currently incompatible with asynchronous SLURM stages due to the [tight coupling of stage execution and commit](https://github.com/iterative/dvc/blob/dd187df6674688ad82f0e933b589a8953c465e1c/dvc/repo/experiments/executor/base.py#L459-L478), but it can be used when running [synchronous SLURM jobs from a centralized controller](#synchronous-execution-of-dvc-experiments-with-slurm-using-a-centralized-controller)). Note that in contrast to DVC's documentation, to version an application's output with the code that was used to produce it, we use Git-SHA-tagged container images in the command supplied to `dvc run` as opposed to tracking code dependencies with the `-d` option in `dvc run` (which we reserve for input data dependencies).
 
+The following section describes the [usage](#usage) of the aforementioned tools and reports [performance results](#performance-on-piz-daint-and-castor) on Piz Daint and Castor object storage. For instructions on how to set up a DVC repo to track your workflow results and use Castor as a remote, please refer to the section on [setting up a new DVC repo with Castor](#setting-up-a-new-dvc-repo-with-castor-in-a-subdirectory).
 
 # Usage
 
@@ -92,7 +93,7 @@ In the `dvc repro` environment, generating the `dvc push` job that runs upon com
 
 ### Known pitfalls and limitations
 
-The provided support for asynchronous SLURM stages in DVC is a proof-of-concept of how to support asynchronous stages without modifying DVC directly. To avoid unexpected behavior with asynchronously executed DVC SLURM stages, it is recommended to follow these points
+The provided support for asynchronous SLURM stages in DVC is a proof-of-concept of how to support asynchronous stages without modifying DVC directly. To avoid unexpected behavior, it is recommended to follow these points
 * Only have a single user actively running jobs on a DVC repo. 
   * This avoids unintended competition for the DVC lock and permission issues with SLURM job control commands that do not work across different users.
 * Do not run `dvc repro` concurrently with another locking `dvc` command (such as `dvc commit`, `dvc push` or `dvc status`) in the same DVC repo, instead run them sequentially (one after the other).
@@ -140,12 +141,51 @@ The upside of this approach is that the full DVC API can be used and SLURM stage
 
 # Performance on Piz Daint and Castor
 
-We use the `iterative_sim` benchmark [with](benchmarks/iterative_sim_encfs_benchmark.sh) and [without](benchmarks/iterative_sim_plain_benchmark.sh) `EncFS`, where `app_sim` is run with `Sarus` on 8 GPU nodes, 16 ranks with each rank writing its payload sampled from /dev/urandom using `dd` from a single thread to the filesystem. The subsequent `dvc commit` and `dvc push` commands are run on a single multi-core node. The software configuration used is available at [iterative_sim.config.md](benchmarks/results/iterative_sim.config.md).
+We use the `iterative_sim` benchmark [without](benchmarks/iterative_sim_plain_benchmark.sh) and [with](benchmarks/iterative_sim_encfs_benchmark.sh) `EncFS`. The `iterative_sim` benchmark consists of a set of sequentially dependent DVC stages (a pipeline), where for every DVC stage `app_sim` is run with `Sarus` on 8 GPU nodes, 16 ranks with each rank writing its payload sampled from /dev/urandom with `dd` to the filesystem using a single thread. The aggregate output payload per DVC stage is increased in powers of 2, from 16 GB to 1.024 TB in our runs (using decimal units, i.e. 1 GB = 10^9 B). The subsequent `dvc commit` and `dvc push` commands are run on a single multi-core node. The software configuration used is available at [iterative_sim.config.md](benchmarks/results/iterative_sim.config.md) and detailed logs can be found in the benchmarks branch.
 
-On the `scratch` filesystem on Piz Daint, creating the 7 stages takes around 18 s and we obtain the following performance numbers with `EncFS` for 
+We use three different configurations for 
 * **large files**: 1 file per rank, i.e. starting with 1 GB
 * **medium-sized files**: 10^3 files per rank, i.e. starting with 1 MB
 * **small files**: 10^4 files per rank, i.e. starting with 100 KB
+and vary the total per-rank payload from 1 GB to 64 GB in powers of 2 (as stated above). On the `scratch` filesystem on Piz Daint, creating the 7 stages for the DVC pipeline of a single configuration takes around 18 s (irrespective of whether `EncFS` is used).
+
+When run without encryption/`EncFS`, we obtain the following results on Piz Daint for **large files**
+
+| individual file size | per-rank payload | aggregate payload | stage time (SLURM step) | dvc commit time (SLURM step) | dvc push time to Castor (SLURM step) |
+| --------------------:| ----------------:| -----------------:| -----------------------:| ----------------------------:| ------------------------------------:|
+|  1 GB                |  1 GB            |    16 GB          |   0m 27.052s            |   0m 46.797s                 |    2m 33.804s                        |
+|  2 GB                |  2 GB            |    32 GB          |   0m 31.342s            |   1m 19.278s                 |    4m  2.548s                        |
+|  4 GB                |  4 GB            |    64 GB          |   1m 22.411s            |   2m 41.182s                 |    7m 43.655s                        |
+|  8 GB                |  8 GB            |   128 GB          |   2m  0.840s            |   5m 30.745s                 |   14m 25.279s                        |
+| 16 GB                | 16 GB            |   256 GB          |   3m 59.262s            |  11m 14.833s                 |   26m 37.984s                        |
+| 32 GB                | 32 GB            |   512 GB          |   7m 42.820s            |  26m 35.141s                 |   55m 34.079s                        |
+| 64 GB                | 64 GB            | 1.024 TB          |  15m 35.199s            |  41m  4.529s                 |  110m 26.116s                        |
+
+with **medium-sized files**
+
+| individual file size | per-rank payload | aggregate payload | stage time (SLURM step) | dvc commit time (SLURM step) | dvc push time to Castor (SLURM step) |
+| --------------------:| ----------------:| -----------------:| -----------------------:| ----------------------------:| ------------------------------------:|
+|  1 MB                |  1 GB            |    16 GB          |   0m 23.444s            |  17m 36.499s                 |    8m  3.508s                        |
+|  2 MB                |  2 GB            |    32 GB          |   0m 33.024s            |  19m 52.038s                 |    9m  2.840s                        |
+|  4 MB                |  4 GB            |    64 GB          |   1m  1.768s            |  22m 33.451s                 |   13m 32.501s                        |
+|  8 MB                |  8 GB            |   128 GB          |   2m  7.507s            |  36m 13.483s                 |   20m 17.103s                        |
+| 16 MB                | 16 GB            |   256 GB          |   4m 15.086s            |  39m 57.099s                 |   35m 32.338s                        |
+| 32 MB                | 32 GB            |   512 GB          |   7m 43.991s            |  53m 24.634s                 |   65m 55.366s                        |
+| 64 MB                | 64 GB            | 1.024 TB          |  15m 40.195s            |  76m  0.389s                 |  123m 25.036s                        |
+
+and with **small files**
+
+| individual file size | per-rank payload | aggregate payload | stage time (SLURM step) | dvc commit time (SLURM step) | dvc push time to Castor (SLURM step) |
+| --------------------:| ----------------:| -----------------:| -----------------------:| ----------------------------:| ------------------------------------:|
+|   100 KB             |  1 GB            |    16 GB          |   0m 52.073s            |  202m 25.826s                |   50m 17.943s                        |
+|   200 KB             |  2 GB            |    32 GB          |   0m 50.400s            |  199m  3.391s                |   55m 47.384s                        |
+|   400 KB             |  4 GB            |    64 GB          |   1m 19.986s            |  209m 17.751s                |   59m 49.833s                        |
+|   800 KB             |  8 GB            |   128 GB          |   2m 43.147s            |  234m 42.978s                |   68m 18.372s                        |
+| 1.600 MB             | 16 GB            |   256 GB          |   4m 27.615s            |  237m 40.735s                |   82m 38.656s                        |
+| 3.200 MB             | 32 GB            |   512 GB          |   8m  5.145s            |  272m 10.639s                |  110m 47.234s                        |
+| 6.400 MB             | 64 GB            | 1.024 TB          |  15m 55.370s            |  407m 14.425s                |  167m 18.985s                        |
+
+We obtain the following performance numbers for the application stage in the same configurations with encryption/`EncFS`
 
 | per-rank payload | aggregate payload | stage time (large files) | stage time (medium files) | stage time (small files) |
 | ----------------:| -----------------:| ------------------------:| -------------------------:| ------------------------:|
@@ -157,43 +197,13 @@ On the `scratch` filesystem on Piz Daint, creating the 7 stages takes around 18 
 | 32 GB            |   512 GB          |  18m 47.857s             |  19m 52.775s              |  18m 47.612s             |
 | 64 GB            | 1.024 TB          |  37m 27.673s             |  38m 53.677s              |  44m 10.290s             |
 
-When run without `EncFS`, we obtain the following results on Piz Daint for **large files** (1 file per rank, i.e. starting with 1 GB)
+These results can be summarized in the following bandwith plot as a function of individual file size.
 
-| per-rank payload | aggregate payload | stage time (SLURM step) | dvc commit time (SLURM step) | dvc push time to Castor (SLURM step) |
-| ----------------:| -----------------:| -----------------------:| ----------------------------:| ------------------------------------:|
-|  1 GB            |    16 GB          |   0m 27.052s            |  0m 46.797s                  |    2m 33.804s                        |
-|  2 GB            |    32 GB          |   0m 31.342s            |  1m 19.278s                  |    4m  2.548s                        |
-|  4 GB            |    64 GB          |   1m 22.411s            |  2m 41.182s                  |    7m 43.655s                        |
-|  8 GB            |   128 GB          |   2m  0.840s            |  5m 30.745s                  |   14m 25.279s                        |
-| 16 GB            |   256 GB          |   3m 59.262s            | 11m 14.833s                  |   26m 37.984s                        |
-| 32 GB            |   512 GB          |   7m 42.820s            | 26m 35.141s                  |   55m 34.079s                        |
-| 64 GB            | 1.024 TB          |  15m 35.199s            | 41m  4.529s                  |  110m 26.116s                        |
+![iterative_sim benchmark results on Piz Daint/Castor](./benchmarks/results/iterative_sim_results.svg)
 
-(when sampling from `/dev/zero`, the write-throughput of the stage is about 4-5x higher without encryption than with `EncFS` for large files) with **medium-sized files** (10^3 files per rank, i.e. starting with 1 MB)
+When sampling from `/dev/zero` instead of `/dev/urandom`, the write-throughput of the application stage is about 4-5x higher without encryption than with `EncFS` for large files.
 
-| per-rank payload | aggregate payload | stage time (SLURM step) | dvc commit time (SLURM step) | dvc push time to Castor (SLURM step) |
-| ----------------:| -----------------:| -----------------------:| ----------------------------:| ------------------------------------:|
-|  1 GB            |    16 GB          |   0m 23.444s            |  17m 36.499s                 |    8m  3.508s                        |
-|  2 GB            |    32 GB          |   0m 33.024s            |  19m 52.038s                 |    9m  2.840s                        |
-|  4 GB            |    64 GB          |   1m  1.768s            |  22m 33.451s                 |   13m 32.501s                        |
-|  8 GB            |   128 GB          |   2m  7.507s            |  36m 13.483s                 |   20m 17.103s                        |
-| 16 GB            |   256 GB          |   4m 15.086s            |  39m 57.099s                 |   35m 32.338s                        |
-| 32 GB            |   512 GB          |   7m 43.991s            |  53m 24.634s                 |   65m 55.366s                        |
-| 64 GB            | 1.024 TB          |  15m 40.195s            |  76m  0.389s                 |  123m 25.036s                        |
-
-and with **small files** (10^4 files per rank, i.e. starting with 100 KB)
-
-| per-rank payload | aggregate payload | stage time (SLURM step) | dvc commit time (SLURM step) | dvc push time to Castor (SLURM step) |
-| ----------------:| -----------------:| -----------------------:| ----------------------------:| ------------------------------------:|
-|  1 GB            |    16 GB          |   0m 52.073s            |  202m 25.826s                |   50m 17.943s                        |
-|  2 GB            |    32 GB          |   0m 50.400s            |  199m  3.391s                |   55m 47.384s                        |
-|  4 GB            |    64 GB          |   1m 19.986s            |  209m 17.751s                |   59m 49.833s                        |
-|  8 GB            |   128 GB          |   2m 43.147s            |  234m 42.978s                |   68m 18.372s                        |
-| 16 GB            |   256 GB          |   4m 27.615s            |  237m 40.735s                |   82m 38.656s                        |
-| 32 GB            |   512 GB          |   8m  5.145s            |  272m 10.639s                |  110m 47.234s                        |
-| 64 GB            | 1.024 TB          |  15m 55.370s            |  407m 14.425s                |  167m 18.985s                        |
-
-Note that only one `dvc commit` or `dvc push` SLURM job can run per DVC repo at any time, while stages can run be concurrently (as long as they are not DVC dependencies of one another). If `dvc commit` or `dvc push` are throughput-limiting steps, one can increase the performance by running disjoint pipelines in separate clones of the Git/DVC repo. To avoid redundant transfers of large files over a slow network connection, it can be useful to synchronize over the local filesystem by adding a [local remote](https://dvc.org/doc/command-reference/remote#example-add-a-default-local-remote), e.g. with 
+Note that only one `dvc commit` or `dvc push` SLURM job can run per DVC repo at any time, while stages can run be concurrently (as long as they are not DVC dependencies of one another). If `dvc commit` or `dvc push` are throughput-limiting steps, the most effective measure is to avoid small file sizes (>= 10 MB is ideal). Besides that, one can increase the performance by running disjoint pipelines in separate clones of the Git/DVC repo. To avoid redundant transfers of large files over a slow network connection, it can be useful to synchronize over the local filesystem by adding a [local remote](https://dvc.org/doc/command-reference/remote#example-add-a-default-local-remote), e.g. with 
 ```shell
 dvc remote add daint-local $SCRATCH/path/to/remote
 ```
@@ -259,7 +269,7 @@ aws_secret_access_key=<openstack-secret>
 ```
 Here, `<aws-profile-name>` is a placeholder - it is suggested that you use the name of your project in `castor.cscs.ch`. If this is not possible, you can also put the credentials under a different block (using e.g. `default` as the AWS profile name).
 
-## Setting up a subdirectory in which you track your experiments
+## Setting up a subdirectory in which you track your data
 
 The following steps only have to be performed once per project. To set up a subdirectory in `data/v0` (the second level for versioning) for tracking workflow results with DVC, in that directory run 
 

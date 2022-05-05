@@ -1,0 +1,22 @@
+ per-rank file count , individual file size , per-rank payload , aggregate payload , stage time (SLURM step) , dvc commit time (SLURM step) , dvc push time to Castor (SLURM step)
+       1             ,     1 GB             ,  1 GB            ,    16 GB          ,   0m 27.052s            ,   0m 46.797s                 ,    2m 33.804s                       
+       1             ,     2 GB             ,  2 GB            ,    32 GB          ,   0m 31.342s            ,   1m 19.278s                 ,    4m  2.548s                       
+       1             ,     4 GB             ,  4 GB            ,    64 GB          ,   1m 22.411s            ,   2m 41.182s                 ,    7m 43.655s                       
+       1             ,     8 GB             ,  8 GB            ,   128 GB          ,   2m  0.840s            ,   5m 30.745s                 ,   14m 25.279s                       
+       1             ,    16 GB             , 16 GB            ,   256 GB          ,   3m 59.262s            ,  11m 14.833s                 ,   26m 37.984s                       
+       1             ,    32 GB             , 32 GB            ,   512 GB          ,   7m 42.820s            ,  26m 35.141s                 ,   55m 34.079s                       
+       1             ,    64 GB             , 64 GB            , 1.024 TB          ,  15m 35.199s            ,  41m  4.529s                 ,  110m 26.116s                       
+    1000             ,     1 MB             ,  1 GB            ,    16 GB          ,   0m 23.444s            ,  17m 36.499s                 ,    8m  3.508s                        
+    1000             ,     2 MB             ,  2 GB            ,    32 GB          ,   0m 33.024s            ,  19m 52.038s                 ,    9m  2.840s                        
+    1000             ,     4 MB             ,  4 GB            ,    64 GB          ,   1m  1.768s            ,  22m 33.451s                 ,   13m 32.501s                        
+    1000             ,     8 MB             ,  8 GB            ,   128 GB          ,   2m  7.507s            ,  36m 13.483s                 ,   20m 17.103s                        
+    1000             ,    16 MB             , 16 GB            ,   256 GB          ,   4m 15.086s            ,  39m 57.099s                 ,   35m 32.338s                        
+    1000             ,    32 MB             , 32 GB            ,   512 GB          ,   7m 43.991s            ,  53m 24.634s                 ,   65m 55.366s                        
+    1000             ,    64 MB             , 64 GB            , 1.024 TB          ,  15m 40.195s            ,  76m  0.389s                 ,  123m 25.036s                        
+   10000             ,   100 KB             ,  1 GB            ,    16 GB          ,   0m 52.073s            ,  202m 25.826s                ,   50m 17.943s                        
+   10000             ,   200 KB             ,  2 GB            ,    32 GB          ,   0m 50.400s            ,  199m  3.391s                ,   55m 47.384s                        
+   10000             ,   400 KB             ,  4 GB            ,    64 GB          ,   1m 19.986s            ,  209m 17.751s                ,   59m 49.833s                        
+   10000             ,   800 KB             ,  8 GB            ,   128 GB          ,   2m 43.147s            ,  234m 42.978s                ,   68m 18.372s                        
+   10000             , 1.600 MB             , 16 GB            ,   256 GB          ,   4m 27.615s            ,  237m 40.735s                ,   82m 38.656s                        
+   10000             , 3.200 MB             , 32 GB            ,   512 GB          ,   8m  5.145s            ,  272m 10.639s                ,  110m 47.234s                        
+   10000             , 6.400 MB             , 64 GB            , 1.024 TB          ,  15m 55.370s            ,  407m 14.425s                ,  167m 18.985s                        
