@@ -190,14 +190,8 @@ On Piz Daint, you can wrap the rank-specific part of your srun-command in the sc
 ENCFS_PW_FILE=<path-to-encfs.key> srun encfs_mount_and_run_v2.sh <encrypt-dir> <decrypt-dir> <log-file> <command>
 ```
 
-You can e.g. run application stages of HPC-PREDICT through Sarus with (providing the extra `SARUS_ARGS=env` environment) and bind-mount the decrypted directory to make it available within the container, e.g. by appending the following command to the above `srun` line,
+You can run application stages of a pipeline on sensitive data through Sarus (providing the extra `SARUS_ARGS=env` environment) and bind-mount the decrypted directory to make it available within the container, e.g. by appending the following command to the above `srun` line,
 ```shell
-sarus run --mount=type=bind,source=/tmp/encfs_$(id -u),destination=/hpc-predict-data ...
+sarus run --mount=type=bind,source=/tmp/encfs_$(id -u),destination=/app-data ...
 ```
-This makes the decrypted view of the data in `<encrypt-dir>` available at the mounted path `/hpc-predict-data` within the container of each SLURM MPI-rank. The `...` are the usual arguments, such as ` --mpi --entrypoint bash <sarus-image-name:tag> -c '<command-to-execute>'.`
-
-The following is a full example derived from an HPC-PREDICT DVC stage (using an older API):
-
-```shell
-SARUS_ARGS=env ENCFS_ROOT=/scratch/snx3000/lukasd/hpc-predict/hpc-predict/data/container_scripts/../../../../../../encrypt CUSTOM_ENV_ENCFS_PW_FILE=~${USER}/hpc_predict.key srun /apps/daint/UES/anfink/encfs/bin/encfs_mount_and_run.sh sarus run --mount=type=bind,source="/tmp/encfs_25680",destination="/hpc-predict-data" --entrypoint bash "cscs-ci/hpc-predict/flownet/deploy" '-c' 'source /src/hpc-predict/flownet/venv/bin/activate && set -x && mkdir -p \"/hpc-predict-data/flownet/hpc_predict/v2/inference/2021-02-11_19-41-32_daint102_volN6/output\" && LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64:${LD_LIBRARY_PATH} PYTHONPATH=/src/hpc-predict/flownet:/src/hpc-predict/hpc-predict-io/python python3 /src/hpc-predict/flownet/reconstruct_3dvenct_coilsens.py --kspc_path \"/hpc-predict-data/input_data/original/flownet/v2/inference/2021-02-11_15-00-00_anfink/volunteers_R6/kspc_R6_volN6_sens.mat\" --mat_dump=\"/hpc-predict-data/flownet/hpc_predict/v2/inference/2021-02-11_19-41-32_daint102_volN6/output/recon_volN6_vn.mat\" --ckpt=\"/hpc-predict-data/flownet/hpc_predict/v2/training/2020-09-04_15-38-00_hannes/dump_venc_mc_dc0_old_sameonly_bigger.ckpt\" '
-```
+This makes the decrypted view of the data in `<encrypt-dir>` available at the mounted path `/app-data` within the container of each SLURM MPI-rank. The `...` are the usual arguments, such as ` --mpi --entrypoint bash <image-name:tag> -c '<command-to-execute>'`.

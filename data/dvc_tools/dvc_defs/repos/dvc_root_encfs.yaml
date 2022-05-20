@@ -11,4 +11,3 @@ host_data:
       custom_target:  # machine-specific
         - machine: ['daint[\d]+', 'nid[\d]+']
           target: /tmp/encfs_$(id -u)_demo_encfs  # make sure this is dvc-repo-specific if using multiple encfs-repos
-

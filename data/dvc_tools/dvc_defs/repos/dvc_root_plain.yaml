@@ -7,4 +7,3 @@ host_data:
     data:
       type: plain
       origin: &mount_data_host .
-

@@ -44,11 +44,13 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
 
     tmp_full_app_yaml_file = default_run_label + '_' + app_yaml_file
     if os.path.exists(tmp_full_app_yaml_file):
-        raise RuntimeError("Choose different filename than {} " 
+        raise RuntimeError("Choose different filename than {} "
                            "for temporarily storing full yaml".format(tmp_full_app_yaml_file))
 
     with open(app_yaml_file, 'r') as f:
-        app_yaml_str = f.read().replace('*', '')  # to avoid YAML load failure due to unresolved anchors
+        app_yaml_str = f.read()\
+                        .replace('*', '')\
+                        .replace('&', '')  # avoid YAML load failure due to unresolved anchors
         app_yaml = yaml.load(app_yaml_str, Loader=yaml.FullLoader)
 
         f.seek(0)
@@ -99,7 +101,8 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
                         _, indent, is_comment = parse_yaml_line(line)
                 # skip unnecessary includes
                 elif len(yaml_nodes) == 2 and yaml_nodes[:1] == ['include'] and \
-                    not(yaml_nodes[1].startswith('dvc_') or yaml_nodes[1] == app_yaml['app']['stages'][stage]['type']):
+                        not(yaml_nodes[1].startswith('dvc_') or
+                            yaml_nodes[1] == app_yaml['app']['stages'][stage]['type']):
                     line = f.readline()
                     _, indent, is_comment = parse_yaml_line(line)
                     while is_comment or indent >= 2 * len(yaml_nodes):
@@ -112,13 +115,11 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
     with open(tmp_full_app_yaml_file, 'w') as f:
         f.writelines(full_app_yaml_lines)
 
-
     with open(tmp_full_app_yaml_file, 'r') as f:
         app_yaml_str = f.read().replace('*', '')  # to avoid YAML load failure due to unresolved anchors
         app_yaml = yaml.load(app_yaml_str, Loader=yaml.FullLoader)
 
     # Previous version without YAML parsing
-    #append_to_app_yaml_cmd = f"cp {app_yaml_file} {tmp_full_app_yaml_file} && " + \
     append_to_app_yaml_cmd = " && ".join([f"cat {app_yaml_include} >> {tmp_full_app_yaml_file}"
                                           for app_yaml_include in app_yaml['include'].values()])
     sp.run(append_to_app_yaml_cmd, shell=True, check=True)
@@ -132,7 +133,7 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
 # 2. step: Find all Jinja2 template variables in dvc_app.yaml, parse args and substitute
 def load_full_app_yaml(filename, load_orig_dvc_root=False):
     with open(filename, 'r') as f:
-        full_app_yaml = yaml.load(f, Loader=yaml.FullLoader)
+        full_app_yaml = yaml.load(f, Loader=yaml.FullLoader)  # TODO: consider Jinja2-render before yaml.load everywhere
 
     # Fix dvc root path
     if load_orig_dvc_root:
@@ -273,7 +274,7 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
 
     args = parser.parse_args()
 
-    if args.show_opts: # do not substitute params, but show completion options
+    if args.show_opts:  # do not substitute params, but show completion options
         # Only show options for command completion, don't generate stage actually (could be put in different module)
         def get_stage_args_dependencies(stage_args):
             stage_args_top_order = {k: set() for k in stage_args}
@@ -311,14 +312,15 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
             # May need to use encfs-mount resolution here in the future
             data_mount = full_app_yaml['host_data']['mount']['data']['origin']
 
-            occ_joined_paths = [os.path.join(data_mount, *[os.path.join(*el) if isinstance(el, list)
-                                                           else el for el in occ['value']])
+            occ_joined_paths = [os.path.relpath(os.path.join(data_mount, *[os.path.join(*el)
+                                                                           if isinstance(el, list)
+                                                                           else el for el in occ['value']]), '.')
                                 for occ in occurrences]
 
             # find common ancestor path, glob path, read with re.search and suggestions
             occ_joined_glob, occ_joined_regex = \
                 sorted([(get_expanded_path_template(occ_path, {k: '*' if k not in fixed_args else fixed_args[k]
-                                                               for k in stage_args.keys()}),  # can this be replaced by get_expanded_path?
+                                                               for k in stage_args.keys()}),  # cf. get_expanded_path
                          get_expanded_path_template(occ_path, {k: r'(?P<' + k + r'>[\.\w-]+/?)' if k not in fixed_args
                                                                else fixed_args[k] for k in stage_args.keys()}))
                         for occ_path in occ_joined_paths], reverse=True)[0]
@@ -366,6 +368,10 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
                 f"  # original run_label used\n\n")
         f.truncate()
     return args
+
+
+def render_cli_opts(opts, sep=' '):
+    return ' '.join([f"{k}{sep}{v}" if v is not None else k for k, v in opts.items()])
 
 
 # 3. step: Assemble dvc-run command from rendered dvc_app.yaml
@@ -450,19 +456,19 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
         container_engine_opts = full_app_yaml['app'].get('container_opts', {})
         # dropped -u \$(id -u \${USER}):\$(id -g \${USER})
         container_command = 'docker run --rm ' + \
-                          ' '.join([f"-v {mount_cmd(v['host'], is_host=True)}:{mount_cmd(v['container'], is_host=False)}"
-                                    for v in mounts.values()]) + ' ' + \
-                          ' '.join([f"{k} {v}" for k, v in container_engine_opts.items()]) + \
-                          f" --entrypoint bash {full_app_yaml['app']['image']} -c"
+            ' '.join([f"-v {mount_cmd(v['host'], is_host=True)}:{mount_cmd(v['container'], is_host=False)}"
+                      for v in mounts.values()]) + ' ' + \
+            render_cli_opts(container_engine_opts) + \
+            f" --entrypoint bash {full_app_yaml['app']['image']} -c"
     elif full_app_yaml['app']['container_engine'] == 'sarus':
         # Andreas' SARUS_ARGS=env skipped (env could be set in extra wrapping script, cf. encfs_mount_and_run_v2.sh)
         container_engine_opts = full_app_yaml['app'].get('container_opts', {})
         container_command = 'sarus run ' + \
-                          ' '.join([f"--mount=type=bind,source={mount_cmd(v['host'], is_host=True)},"
-                                    f"destination={mount_cmd(v['container'], is_host=False)}"
-                                    for v in mounts.values()]) + ' ' + \
-                          ' '.join([f"{k} {v}" for k, v in container_engine_opts.items()]) + \
-                          f" --entrypoint bash {full_app_yaml['app']['image']} -c"
+            ' '.join([f"--mount=type=bind,source={mount_cmd(v['host'], is_host=True)},"
+                      f"destination={mount_cmd(v['container'], is_host=False)}"
+                      for v in mounts.values()]) + ' ' + \
+            render_cli_opts(container_engine_opts) + \
+            f" --entrypoint bash {full_app_yaml['app']['image']} -c"
     else:
         raise RuntimeError(f"Unsupported container engine {full_app_yaml['app']['container_engine']}")
 
@@ -502,12 +508,14 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     else:
         if 'mpi_opts' in full_app_yaml['app']['stages'][args.stage]:
             mpi_exec = full_app_yaml['app']['stages'][args.stage].get('mpi_exec', 'mpiexec')
-            mpi_opts = ' '.join([f"{k} {v}" for k, v in full_app_yaml['app']['stages'][args.stage]['mpi_opts'].items()])
+            mpi_opts = render_cli_opts(full_app_yaml['app']['stages'][args.stage]['mpi_opts'])
             mpi_command = f"{mpi_exec} {mpi_opts}"
             script = f"time {mpi_command} {script}"  # TODO: make call to time optional
             # container_command = f"{mpi_command} {container_command}"
         else:
             print("Not using SLURM or MPI in this DVC stage.")
+
+    os.chdir(dvc_dir)
 
     # script commandline options
     def get_expanded_options(opts, sep=" "):
@@ -521,14 +529,13 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
             stage_command_line_options.update(el['command_line_options'])
 
     # Do not compose extra_command_line_options with dvc_root as should be code deps, etc. (data deps caught in stages)
-    command_line_options = get_expanded_options(stage_command_line_options) + " " +\
-                           get_expanded_options(full_app_yaml['app']['stages'][args.stage]['extra_command_line_options'])
-
+    command_line_options = get_expanded_options(stage_command_line_options)
+    extra_command_line_options = full_app_yaml['app']['stages'][args.stage].get('extra_command_line_options', None)
+    if extra_command_line_options is not None:
+        command_line_options += " " + get_expanded_options(extra_command_line_options)
 
     commit_sha = run_shell_cmd("git rev-parse HEAD")
     git_root = run_shell_cmd("git rev-parse --show-toplevel")
-
-    os.chdir(dvc_dir)
 
     host_stage_rel_input_deps  = [os.path.relpath(data_dep['host_stage_data'], dvc_dir)
                                   for data_dep in stage_data_deps['input']]
@@ -557,6 +564,12 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
            f"{container_command} \\\"{script} {command_line_options}\\\" 2>&1 | tee {out_log_file}\" ",
            shell=True, check=True)
     # mkdir host_stage_rel_output_deps only required when not using slurm (as already integrated in dvc_run_sbatch)
+
+    # optionally freeze stage (manually executed stages, etc.)
+    if full_app_yaml['app']['stages'][args.stage].get('frozen', False):
+        print(f"Freezing stage for execution outside dvc - run 'dvc commit {stage_name}' when outputs are done.")
+        sp.run(f"dvc freeze {stage_name} ",
+               shell=True, check=True)
 
 
 if __name__ == '__main__':
@@ -592,7 +605,7 @@ if __name__ == '__main__':
         parser.add_argument("--app-yaml", type=str, required=True,
                             help="DVC stage generation configuration file")
         parser.add_argument("--stage", type=str, required=True,
-                            help=f"DVC stage to run under app/stages in app-yaml")
+                            help="DVC stage to run under app/stages in app-yaml")
         args = parser.parse_args()
         # 3. step: Assemble dvc-run command from rendered dvc_app.yaml
         create_dvc_stage(full_app_yaml_file=args.app_yaml, args=args, load_orig_dvc_root=True)
