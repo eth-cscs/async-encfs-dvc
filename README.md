@@ -347,4 +347,20 @@ export AWS_CONFIG_FILE=$(realpath $(dvc root)/.aws_config)
 from within `data/v0`.
 
 
+# Deleting object storage containers on Castor
+
+When the data stored on Castor is no longer required, you can delete the associated object storage containers from within the castor environment
+```shell
+source data/dvc_tools/openstack/cli/castor.env
+```
+by using the OpenStack swift client,
+```shell
+swift post <name-of-your-castor-bucket>+segments -H 'X-History-Location:'
+swift delete <name-of-your-castor-bucket>
+swift delete <name-of-your-castor-bucket>_versions
+swift delete <name-of-your-castor-bucket>+segments
+swift delete <name-of-your-castor-bucket>+segments_versions
+```
+
+
 ### TODO: Experiment monitoring
