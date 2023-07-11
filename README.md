@@ -247,7 +247,7 @@ pip install python-openstackclient lxml oauthlib python-swiftclient python-heatc
 pip install dvc[s3] jinja2
 ```
 
-Depending on your particular `dvc --version`, you may want to apply some [patches](data/dvc_tools/patches/README.md) to make it work with the Openstack S3 interface (version 1) or, and this is recommented in particular, environment variables in DVC stages (version 2). The latter can be applied using
+Depending on your particular `dvc --version`, you may want to apply some [patches](data/dvc_tools/patches/README.md) to make it work with the Openstack S3 interface (version 1) or, and this is recommended in particular, environment variables in DVC stages (version 2). The latter can be applied using
 
 ```shell
 patch venv/lib/python*/site-packages/dvc/parsing/interpolate.py "$(git rev-parse --show-toplevel)"/data/dvc_tools/patches/dvc_2_env_variables_parsing_interpolate.patch
@@ -257,7 +257,7 @@ patch venv/lib/python*/site-packages/dvc/parsing/interpolate.py "$(git rev-parse
 
 Every new user of the DVC repo on Castor first needs to create S3 access credentials. First, set up an openstack CLI environment for Castor with
 ```shell
-source data/dvc_tools/openstack/cli/castor.env
+source data/dvc_tools/openstack/cli/castor-cli-otp.env
 ```
 You will need to log in and specify your project. Then you can create EC2 credentials using
 ```shell
