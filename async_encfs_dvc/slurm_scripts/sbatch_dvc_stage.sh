@@ -3,7 +3,7 @@
 #SBATCH --output=output/dvc_sbatch.%x.%j.out
 #SBATCH --error=output/dvc_sbatch.%x.%j.err
 
-# to be run with dvc run/repro --no-commit! (the first SLURM job runs the actual workload, the second one commits it to DVC)
+# to be run with dvc stage add/repro --no-commit! (the first SLURM job runs the actual workload, the second one commits it to DVC)
 
 set -euxo pipefail
 

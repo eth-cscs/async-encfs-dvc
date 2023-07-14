@@ -19,7 +19,7 @@ set -x
 mkdir -p "${dvc_root}/${encrypt_prefix}"app_sim/v1/simulation/$((start_stage-1))/output
 touch "${dvc_root}/${encrypt_prefix}"app_sim/v1/simulation/$((start_stage-1))/output/sim.0.dat  # initial dependency
 for i in $(seq ${start_stage} ${end_stage}); do
-  ../data/dvc_tools/dvc_create_stage.py --app-yaml ../app_sim/dvc_app.yaml --stage simulation \
+  ../data/dvc_tools/dvc_create_stage --app-yaml ../app_sim/dvc_app.yaml --stage simulation \
     --run-label $i --input-simulation $((i-1)) \
     --simulation-output-file-num-per-rank ${output_files_per_rank} \
     --simulation-output-file-size $((10**9 * 2**(i-start_stage) / output_files_per_rank))

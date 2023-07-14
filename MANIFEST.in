@@ -1,0 +1,8 @@
+include async_encfs_dvc/dvc_policies/repos/dvc_root_plain.yaml
+include async_encfs_dvc/dvc_policies/repos/dvc_root_encfs.yaml
+include async_encfs_dvc/dvc_policies/stages/dvc_etl.yaml
+include async_encfs_dvc/dvc_policies/stages/dvc_ml_training.yaml
+include async_encfs_dvc/dvc_policies/stages/dvc_ml_inference.yaml
+include async_encfs_dvc/dvc_policies/stages/dvc_simulation.yaml
+include async_encfs_dvc/openstack/cli/castor-cli-otp.env
+include async_encfs_dvc/openstack/cli/castor.env

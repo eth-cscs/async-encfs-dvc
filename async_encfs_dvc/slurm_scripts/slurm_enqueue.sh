@@ -3,7 +3,7 @@
 set -euxo pipefail
 
 # A dvc stage with this script should be created with
-#   dvc run --name <stage-name> --desc ... --deps ... --outs-persist ... --no-exec $(dvc root)/dvc_run_sbatch.ch <stage-name> command
+#   dvc stage add --name <stage-name> --desc ... --deps ... --outs-persist ... --no-exec $(dvc root)/dvc_run_sbatch.ch <stage-name> command
 # where command is bash -c "..." (... can include pipes, I/O redirection, etc.) and run with
 #   dvc repro --no-commit <stage-name>
 
@@ -237,8 +237,8 @@ if [[ "${run_stage}" == "YES" ]]; then
     # Launch SLURM sbatch jobs
 
     # Clean up of any left-overs from previous run TODO: put this into sbatch_dvc_stage.sh as well (in case of requeue)
-    for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage.py
-        ls -I stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc run --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
+    for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage
+        ls -I stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc stage add --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
         mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit to succeed
     done
     

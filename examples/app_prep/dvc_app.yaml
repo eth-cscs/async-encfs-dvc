@@ -1,9 +1,9 @@
 # app_prep version 1 description for DVC stage generation
 
 app:
-  name: &app_name app_prep/v1
+  name: &app_name app_prep_v1
   container_engine: none  # if using docker/sarus for automated stages, create another version of this file
-  code_root: &code_root "\\$(git rev-parse --show-toplevel)/app_prep"
+  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_prep"
 
   # examples for manual and automated ETL stages
   # (the assignment of manual to train, auto to test/inf could be chosen differently)
@@ -16,7 +16,7 @@ app:
       frozen: True
       name: &stage_name manual
       input_data: # parameterizes stage
-        name: &etl_input_data ml_dataset/v1/training  # replace ml_dataset with the name of a specific dataset
+        name: &etl_input_data ml_dataset_v1/training  # replace ml_dataset with the name of a specific dataset
       # mpi_opts/slurm_opts not used as never run
       # script is never run (commandline params are not checked, but should be used in manual execution)
       script: "true"
@@ -26,7 +26,7 @@ app:
       frozen: False
       name: &stage_name auto
       input_data:
-        name: &etl_input_data ml_dataset/v1/test
+        name: &etl_input_data ml_dataset_v1/test
       # mpi_opts/slurm_opts can go here
       script: [*code_root, prep.sh]  # the automated ETL step
 
@@ -35,11 +35,10 @@ app:
       frozen: False
       name: &stage_name auto
       input_data:
-        name: &etl_input_data ml_dataset/v1/inference
+        name: &etl_input_data ml_dataset_v1/inference
       # mpi_opts/slurm_opts can go here
       script: [*code_root, prep.sh]
 
 include:
-  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
-  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml'
-  etl_stage: '../data/dvc_tools/dvc_defs/stages/dvc_etl.yaml'
+  dvc_root: "../data/v0/.dvc_policies/repo/dvc_root.yaml"
+  etl_stage: "../data/v0/.dvc_policies/stages/dvc_etl.yaml"

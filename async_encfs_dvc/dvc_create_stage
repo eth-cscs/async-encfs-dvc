@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Generate DVC stage from a parameterized app-definition in YAML that is instantiated with commandline arguments.
 
@@ -8,7 +8,7 @@ Two different ways of launching this:
 
 Based on dvc_app.yaml this script generates a DVC stage by running the equivalent of
 ```
-  dvc run --no-exec --name <stage-name> --deps <host-input-directory> \
+  dvc stage add --name <stage-name> --deps <host-input-directory> \
       --outs(-persist) <host-output-directory>/output ... (<slurm-command>/<container-image>/<encfs-command>)
 ```
 The execution can then later be done with 'dvc repro <stage-name>' (use '--no-commit' with SLURM, and
@@ -17,7 +17,6 @@ upon successful completion 'dvc commit').
 
 import argparse
 import subprocess as sp
-import yaml
 import os
 import sys
 import hashlib
@@ -27,6 +26,7 @@ import datetime
 import re
 import glob
 import shutil
+import yaml
 from jinja2 import Environment, BaseLoader, meta, StrictUndefined
 
 
@@ -340,7 +340,7 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
             stage_option_completions[stage_arg] = dict(search_path=glob_search_path, candidates=stage_option_candidates)
 
         if len(stage_option_completions) > 0:
-            print(f"### Completion options for stage arguments to dvc_create_stage.py ##")
+            print(f"### Completion options for stage arguments to dvc_create_stage ##")
             for stage_arg, completions in stage_option_completions.items():
                 completions_str = '\n  '.join(completions['candidates'])
                 print(f"Options for --{stage_arg.replace('_','-')} "
@@ -385,12 +385,12 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     stage_label = f"{full_app_yaml['app']['name'].replace('/','_')}_{args.stage}"
     stage_name = f"{stage_label}_{full_app_yaml['original']['run_label']}"
 
-    # Working directory of dvc run (e.g. <output_dep>/.. in ML stages), move rendered dvc_app.yaml there
+    # Working directory of dvc stage add (e.g. <output_dep>/.. in ML stages), move rendered dvc_app.yaml there
     dvc_dir = get_validated_path([full_app_yaml['host_data']['dvc_config']] + stage_def['dvc'], is_input=False)
     os.makedirs(dvc_dir)
     shutil.move(full_app_yaml_file, os.path.join(dvc_dir, os.path.basename(args.app_yaml)))
 
-    # Accumulate dvc run command, starting with host (-> encfs) -> container (runtime) mount mappings
+    # Accumulate dvc stage add command, starting with host (-> encfs) -> container (runtime) mount mappings
     mounts = dict()
     for mount_name, mount_config in full_app_yaml['host_data']['mount'].items():
         if full_app_yaml['app']['container_engine'] != 'none':
@@ -556,11 +556,11 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
               f"\'dvc repro{' --no-commit' if using_slurm else ''}\'.")
 
     stage_create_command = os.path.relpath(sys.argv[0], git_root) + ' ' + ' '.join(sys.argv[1:])
-    sp.run(f"dvc run --no-exec --name {stage_name} "
+    sp.run(f"dvc stage add --name {stage_name} "
            f"{' '.join(['--deps {}'.format(dep) for dep in host_stage_rel_input_deps])} " 
            f"{' '.join([('--outs-persist ' if using_slurm else '--outs ') + dep for dep in host_stage_rel_output_deps])} "
            f"--desc \"Generated with {stage_create_command} at commit {commit_sha}\" "
-           f"\"set -o pipefail; mkdir -p {' '.join(host_stage_rel_output_deps)} && "
+           f"\"if (set -o pipefail) 2>/dev/null; then set -o pipefail; fi; mkdir -p {' '.join(host_stage_rel_output_deps)} && "
            f"{container_command} \\\"{script} {command_line_options}\\\" 2>&1 | tee {out_log_file}\" ",
            shell=True, check=True)
     # mkdir host_stage_rel_output_deps only required when not using slurm (as already integrated in dvc_run_sbatch)

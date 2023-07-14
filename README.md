@@ -1,39 +1,50 @@
 # Data version control in privacy-preserving HPC workflows using DVC, EncFS, SLURM and Openstack Swift on castor.cscs.ch
 
-This project applies infrastructure-as-code principles to [DVC](https://dvc.org) and combines it with [EncFS](https://github.com/vgough/encfs) and [SLURM](https://slurm.schedmd.com) to track results of scientific HPC workflows in a privacy-preserving manner and exchange them via the OpenStack Swift object storage at `castor.cscs.ch`.
+This project applies infrastructure-as-code principles to [DVC](https://dvc.org) and integrates it with [EncFS](https://github.com/vgough/encfs) and [SLURM](https://slurm.schedmd.com) to track results of scientific HPC workflows in a privacy-preserving manner, exchanging them via the OpenStack Swift object storage at `castor.cscs.ch`.
 
-The **core features** extending DVC include
-* SLURM support for HPC clusters: DVC stages (and their dependencies) can be executed asynchronously with SLURM (`dvc run/repro` submits a SLURM job, `dvc commit` is run upon completion of that job)
-* privacy-preservation: DVC stages can use a transparently encrypted filesystem with [EncFS](https://github.com/vgough/encfs) so that no unencrypted data is persisted to storage or exchanged with DVC (see [further details](data/dvc_tools/encfs_scripts/README.md))
-* container engine support: DVC stages can be run with Docker and [Sarus](https://github.com/eth-cscs/sarus), code-dependencies are tracked using Git-SHA-tagged container images which makes the stages fully re-executable
-* infrastructure-as-code approach: DVC repo structure and stage policies can be encoded in a set of reusable definitions in YAML so that an application can generate a DVC stage that respects these requirements from a succinct description of its execution environment
+The **key features** extending DVC include
+* SLURM integration for HPC clusters: DVC stages and their dependencies can be executed asynchronously using SLURM (`dvc repro` submits a SLURM job, `dvc commit` is run upon job completion)
+* privacy-preservation: DVC stages can utilize a transparently encrypted filesystem with [EncFS](https://github.com/vgough/encfs) ensuring no unencrypted data is persisted to storage or exchanged through DVC (see [further details](data/dvc_tools/encfs_scripts/README.md))
+* container engine support: DVC stages can be run with Docker and [Sarus](https://github.com/eth-cscs/sarus). Code dependencies are tracked via Git-SHA-tagged container images, making stages fully re-executable
+* infrastructure-as-code practice: DVC repository structure and stage policies can be encoded into reusable YAML definitions, enabling applications to generate DVC stages that conform to these requirements
 
-These features do not modify DVC (but extend it) and can be largely used separately. They are exemplified on three demo applications, [app_ml](app_ml) for an ML application, [app_sim](app_sim) for a simulation and [app_prep](app_prep) for a preprocessing step (manual and automated). The main executables for these are
- * [training.py](app_ml/training.py) and [inference.py](app_ml/inference.py) for `app_ml` 
- * [simulation.sh](app_sim/simulation.sh) for `app_sim`
- * [prep.sh](app_prep/prep.sh) for `app_prep`.
+These capabilities extend, rather than modify, DVC and can largely be used independently. They are exemplified on three demo applications, [app_ml](app_ml) for a machine learning application, [app_sim](app_sim) for a simulation and [app_prep](app_prep) for a preprocessing step (manual and automated). Each of them is accompanied by a corresponding stage policy that can be customized inside a DVC repository to reflect evolving requirements. 
 
-The purpose of this project is to provide a base platform that can be customized in projects using this setup. That is the demo applications can be replaced and repo and stage policies updated by ones that match the particular use case (and from there on continuously evolved). To get started with this, use `git clone --single-branch ...` to only fetch the master branch (not the benchmarking results). The setup in this repository does not make any assumptions on the application data protocols, these need to be managed at the application-level (i.e. in the above executables) with its own versioning (which can be used, though, to structure the repository). One option for the above examples may be setting up a package in a folder `app_protocol` that is imported by all of `app_ml`, `app_sim` and `app_prep` and defines their data exchange protocol. DVC as used here does not have a concept for application protocols, but only of dependencies between files.
+A real-world scenario may also include custom application protocols. They can be defined in an additional package (e.g. `app_protocol`) that is imported by the participating applications. It is important to note that DVC does not have a concept for application protocols, but only tracks dependencies between files.  
 
-More background on data versioning with DVC stages is available in the [documentation](https://dvc.org/doc/use-cases/versioning-data-and-model-files/tutorial#automating-capturing) on `dvc run`/`repro` (`dvc exp` is currently incompatible with asynchronous SLURM stages due to the [tight coupling of stage execution and commit](https://github.com/iterative/dvc/blob/dd187df6674688ad82f0e933b589a8953c465e1c/dvc/repo/experiments/executor/base.py#L459-L478), but it can be used when scheduling [synchronous SLURM jobs from a centralized controller](#synchronous-execution-of-dvc-experiments-with-slurm-using-a-centralized-controller)). Note that we version an application's output with the code that was used to produce it by using Git-SHA-tagged container images in the command supplied to `dvc run`. This is in contrast to DVC's documentation, which tracks code dependencies with the `-d` option in `dvc run` (which we reserve for input data dependencies).
+Thus, the project aims to provide a flexible platform that can be customized according to specific project needs. For an overview of the tool's usage and performance results on Piz Daint and Castor object storage, refer to the [usage](#usage) section and [performance report](#performance-on-piz-daint-and-castor) respectively.
 
-The following section describes the [usage](#usage) of the aforementioned tools and reports [performance results](#performance-on-piz-daint-and-castor) on Piz Daint and Castor object storage. For instructions on how to set up a DVC repo to track your workflow results and use Castor as a remote, please refer to the section on [setting up a new DVC repo with Castor](#setting-up-a-new-dvc-repo-with-castor-in-a-subdirectory). To explore the functionality, consult the [ml_repo tutorial](tutorials/ml_repo.md) that describes how to set up a repo for an ML workflow and the `iterative_sim` [benchmark](benchmarks) (described [below](#performance-on-piz-daint-and-castor)). 
+For a step-by-step guide on setting up a DVC repository to track workflow results using Castor as a remote, please refer to [Setting up a new DVC repo with Castor](#setting-up-a-new-dvc-repo-with-castor-in-a-subdirectory). To explore the project's functionality, consider the [Machine Learning tutorial](examples/ml_tutorial.md) that describes how to set up a repository for an ML workflow and the `iterative_sim` [benchmark](benchmarks) for an iterative simulation workflow.
+
+## Background
+
+For more information on data versioning with DVC stages, consult the [documentation](https://dvc.org/doc/use-cases/versioning-data-and-model-files/tutorial#automating-capturing) on `dvc stage add` and `repro` (`dvc exp` is currently incompatible with asynchronous SLURM stages due to the [tight coupling of stage execution and commit](https://github.com/iterative/dvc/blob/dd187df6674688ad82f0e933b589a8953c465e1c/dvc/repo/experiments/executor/base.py#L459-L478), but it can be used when launching [synchronous SLURM jobs from a centralized controller](#synchronous-execution-of-dvc-experiments-with-slurm-using-a-centralized-controller)).
+
+It is important to note that we version an application's output with the code that was used to produce it by using Git-SHA-tagged container images in the command supplied to `dvc stage add`. This is in contrast to DVC's documentation, which tracks code dependencies as data with the `-d` option in `dvc stage add` (which we reserve for input data dependencies).
+
+# Installation
+
+In your Python environment, run
+```
+pip install git+https://github.com/eth-cscs/async-encfs-dvc.git
+```
+This will install all dependencies except for EncFS. If you require encryption, follow the separate [installation instructions](async_encfs_dvc/encfs_scripts/README.md) for EncFS.
 
 # Usage
 
-The utility [`dvc_create_stage.py`](data/dvc_tools/dvc_create_stage.py) generates a DVC stage based on a concise definition of the application's runtime environment as well as DVC repo structure and stage policies. The app definition and stage policies can be parameterized in Jinja2 syntax allowing the user a certain flexibility, which is exposed through `dvc_create_stage.py`'s command line API. Besides that, the tool follows an infrastructure-as-code approach and the YAML usage is inspired by such tools (e.g. Ansible). 
+The [`dvc_create_stage`](data/dvc_tools/dvc_create_stage) utility generates a DVC stage based on a concise definition of the application's runtime environment, DVC repository structure and stage policies. The tool utilizes an infrastructure-as-code approach and the YAML usage is inspired by similar tools like Ansible. In particular, the application and stage policies can be parameterized in Jinja2 syntax allowing the user a certain flexibility, which is exposed through `dvc_create_stage`'s command line interface.
 
 Typical usage with the example applications for [app_ml](app_ml/dvc_app.yaml) takes the form 
 ```shell
-dvc_create_stage.py --app-yaml app_ml/dvc_app.yaml --stage inference ... 
+dvc_create_stage --app-yaml app_ml/dvc_app.yaml --stage inference ... 
 ```
-where the application to run is specified in `--app-yaml` and the application stage in `--stage`. The latter must correspond to an entry at `app > stages` in the spec, e.g. for `app_ml/dvc_app.yaml` `training` and `inference` are valid options. Suggestions for the remaining commandline parameters based on the current repository state (and already supplied commandline parameters) can be displayed using `--show-opts`.
+where the application to run is specified in `--app-yaml` and the application stage in `--stage`. The latter must correspond to an entry at `app > stages` in the application policy, e.g. for `app_ml/dvc_app.yaml` `training` and `inference` are valid options as defined in the included [training](data/dvc_tools/dvc_defs/stages/dvc_ml_training.yaml) and [inference](data/dvc_tools/dvc_defs/stages/dvc_ml_inference.yaml) policies. Completion suggestions for the remaining commandline parameters based on the current repository state can be displayed using `--show-opts`.
 
 To define the DVC repository structure and the stage policies, the application definition [`dvc_app.yaml`](app_ml/dvc_app.yaml) includes corresponding files from [data/dvc_tools/dvc_defs](data/dvc_tools/dvc_defs). For each application stage in `dvc_app.yaml` a `type` is referenced in `dvc_app.yaml` and a corresponding stage definition imported (under `include`) that declares the stage's data dependencies and outputs as well as associated commandline parameters. For `app_ml/dvc_app.yaml` the imported definitions are [dvc_ml_training.yaml](data/dvc_tools/dvc_defs/stages/dvc_ml_training.yaml) and [dvc_ml_inference.yaml](data/dvc_tools/dvc_defs/stages/dvc_ml_inference.yaml). In addition, `dvc_app.yaml` also imports a DVC repo definition (under the `dvc_root` field) that specifies the top-level layout of a DVC-managed directory (as compared to the stage definition that specify the finer layout). In particular, there are examples of both a DVC repo with EncFS-encryption ([dvc_root_encfs.yaml](data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml)) and without encryption ([dvc_root_plain.yaml](data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml)).
  
-In a first step, `dvc_create_stage.py` processes the `include`s required by `--stage` (discarding all other entries `app > stages`). Secondly, all YAML anchors are resolved and the Jinja2 template variables substituted and the resulting full stage definition is written to a file that will be moved to the stage's `dvc.yaml` directory. The values for the Jinja2 variables can be set via the commandline (replace `_` by `-` for this purpose and use `--show-opts` for commandline completion suggestions). The Jinja2 template variables are the primary customization point for DVC stages generated with `dvc_create_stage.py`.
+In a first step, `dvc_create_stage` processes the `include`s required by `--stage` (discarding all other entries `app > stages`). Secondly, all YAML anchors are resolved and the Jinja2 template variables substituted and the resulting full stage definition is written to a file that will be moved to the stage's `dvc.yaml` directory. The values for the Jinja2 variables can be set via the commandline (replace `_` by `-` for this purpose and use `--show-opts` for commandline completion suggestions). The Jinja2 template variables are the primary customization point for DVC stages generated with `dvc_create_stage`.
 
-From the resulting full stage definition, `dvc_create_stage.py` then creates the actual DVC stage using `dvc run --no-exec ...` (this can be performed on its own when the full stage definition is already available). Once the DVC stage is generated, it can be run using the familiar `dvc repro .../dvc.yaml` or `dvc repro --no-commit .../dvc.yaml` with SLURM. When using `EncFS`, make sure the `ENCFS_PW_FILE` and possibly also `ENCFS_INSTALL_DIR` are set in the environment.
+From the resulting full stage definition, `dvc_create_stage` then creates the actual DVC stage using `dvc stage add ...` (this can be performed on its own when the full stage definition is already available). Once the DVC stage is generated, it can be run using the familiar `dvc repro .../dvc.yaml` or `dvc repro --no-commit .../dvc.yaml` with SLURM. When using `EncFS`, make sure the `ENCFS_PW_FILE` and possibly also `ENCFS_INSTALL_DIR` are set in the environment.
 
 The generated DVC stage will then automatically respect the prescribed stage policy and repo structure. In the case of the examples it takes the following layout (without encryption)
 
@@ -103,17 +114,17 @@ The provided support for asynchronous SLURM stages in DVC is a proof-of-concept 
 * Do not rely on the output of `dvc status` while executing asynchronous SLURM stages. 
   * DVC has no immediate concept for asynchronous stages: When `dvc repro` is run on a SLURM stage, it returns upon submission of stage, commit/cleanup (and possibly push) SLURM jobs believing that the stage has been completed and correspondingly updating the `dvc.lock` file (altered behavior needs to be implemented directly in DVC), when actually only the stage job will produce the results and the commit job update `dvc.lock` correspondingly  (or the cleanup job remove it in case of stage failure). The actual status of asynchronous SLURM stages is tracked in `<stage-name>.<status>` files in the `dvc.yaml` folder (and could be a feature in `dvc.lock` to track asynchronously completed stages).
 * Do not modify input dependencies or outputs of DVC SLURM stages before the stage, `dvc commit` and optionally `dvc push` jobs have completed.
-  * In particular do not launch another DVC stage (both SLURM and non-SLURM) that modifies these as there is no lock in place that guarantees mutually exclusive (concurrent) access to dependency and output data sets for `dvc run/repro` (needs to be implemented in DVC).
+  * In particular do not launch another DVC stage (both SLURM and non-SLURM) that modifies these as there is no lock in place that guarantees mutually exclusive (concurrent) access to dependency and output data sets for `dvc repro` (needs to be implemented in DVC).
 * Do not launch a pipeline with a mix of SLURM stages and non-SLURM stages in a `dvc repro` call on a SLURM cluster (only run exclusively either or)
   * SLURM stages are executed asynchronously (as SLURM jobs, after `dvc repro` returned, only the job submission happens synchronously), whereas non-SLURM jobs require their inputs to be available when `dvc repro` executes. 
-  * To support a mixture in `dvc run/repro` would require that at every non-SLURM stage a check is made that all dependencies are also of non-SLURM type or (optionally) the execution waits until the SLURM dependency completes. Although this could be implemented in another script analogous to `slurm_enqueue.sh`, a clean solution requires changes to DVC.
+  * To support a mixture in `dvc repro` would require that at every non-SLURM stage a check is made that all dependencies are also of non-SLURM type or (optionally) the execution waits until the SLURM dependency completes. Although this could be implemented in another script analogous to `slurm_enqueue.sh`, a clean solution requires changes to DVC.
 * Use a dedicated allocation with `salloc` to run `dvc repro` (or similar commands) on a DAG that has already been partially executed but not committed 
   * DVC will try to synchronously commit any un-/partially committed stages which can lead to high resource consumption on the localhost. Use the above `salloc` command to re-run any failed/incompletely run `dvc commit` jobs on stages, where the application has successfully completed.
 * When running `dvc repro` on a pipeline of SLURM stages that depends on another SLURM pipeline that was already submitted before, make sure that the dependency on the formerly scheduled pipeline has either not yet started the application stage (e.g. in held state) or finished `dvc commit`.
   * If the stage has started and the data has not yet been committed, the `dvc repro` on the dependent pipeline will detect the change of output data in the dependency and trigger a file hash computation (needs to be changed in DVC). 
 
 To support asynchronous stages in DVC would require
-* a mechanism for setting up and tracking asynchronous stages (e.g. by adding an option to `dvc run`) that is updated on execution (to `pending`, with jobid, like in `slurm_enqueue.sh`, further updated by the DVC command to `running`/`completed`/`failed` like in the sbatch scripts) and taken into account during DAG scheduling (e.g. blocking on demand by the user/aborting when a synchronous stage depends on an asynchronous one that is not yet completed, informing the external scheduler (or DVC command if scheduler-agnostic) about stage dependencies) as well as by `dvc status`.
+* a mechanism for setting up and tracking asynchronous stages (e.g. by adding an option to `dvc stage add`) that is updated on execution (to `pending`, with jobid, like in `slurm_enqueue.sh`, further updated by the DVC command to `running`/`completed`/`failed` like in the sbatch scripts) and taken into account during DAG scheduling (e.g. blocking on demand by the user/aborting when a synchronous stage depends on an asynchronous one that is not yet completed, informing the external scheduler (or DVC command if scheduler-agnostic) about stage dependencies) as well as by `dvc status`.
 * a method to update asynchronous stage status (e.g. by extending `dvc status`) from the running stage as well as a method to clean up stale statuses/runs interactively (e.g. by extending `dvc gc`).
 * guaranteeing mutually exclusive, concurrent access to data dependencies/outputs from both SLURM jobs and a controlling terminal to make sure they are not overwritten (cf. `dvc exp --temp`).
 * to make this work for `dvc exp`, stage execution needs to be decoupled from completion handling (commit), which is currently [not the case](https://github.com/iterative/dvc/blob/dd187df6674688ad82f0e933b589a8953c465e1c/dvc/repo/experiments/executor/base.py#L459-L478).
@@ -121,7 +132,7 @@ To support asynchronous stages in DVC would require
 
 ## Synchronous execution of DVC experiments with SLURM using a centralized controller
 
-As an alternative to the above asynchronous execution of DVC stages, it is possible to execute them synchronously from a centralized controller node if they use [`sbatch --wait`](https://github.com/iterative/dvc/issues/1057#issuecomment-901367180) in the DVC command so that `sbatch` only returns upon completion (or failure) of the SLURM job. This can be useful to e.g. run DVC experiments managed with `dvc exp` queues. The [procedure](https://dvc.org/doc/user-guide/experiment-management) includes first defining experiments (`dvc_create_stage.py` could be extended to support this) and filling up the queue using `dvc exp run --queue <stage>`, where `<stage>` must use `sbatch --wait ...` if it includes a SLURM job. Then a SLURM job for the centralized controller can be run, e.g. with
+As an alternative to the above asynchronous execution of DVC stages, it is possible to execute them synchronously from a centralized controller node if they use [`sbatch --wait`](https://github.com/iterative/dvc/issues/1057#issuecomment-901367180) in the DVC command so that `sbatch` only returns upon completion (or failure) of the SLURM job. This can be useful to e.g. run DVC experiments managed with `dvc exp` queues. The [procedure](https://dvc.org/doc/user-guide/experiment-management) includes first defining experiments (`dvc_create_stage` could be extended to support this) and filling up the queue using `dvc exp run --queue <stage>`, where `<stage>` must use `sbatch --wait ...` if it includes a SLURM job. Then a SLURM job for the centralized controller can be run, e.g. with
 
 ```shell
 $ sbatch --job-name dvc_op_<repo-hash> --dependency singleton --time <max-time> --account <account> --constraint mc sbatch_dvc_exp_run.sh --run-all --jobs ...
@@ -277,10 +288,12 @@ Here, `<aws-profile-name>` is a placeholder - it is suggested that you use the n
 The following steps only have to be performed once per project. To set up a subdirectory in `data/v0` (the second level for versioning) for tracking workflow results with DVC, in that directory run 
 
 ```shell
-dvc init --subdir
+dvc init --subdir --verbose
 dvc config core.analytics false
 ```
-You will now have an empty directory, whose contents are tracked by DVC, but not yet synchronized with any remote storage. The second step disables DVC analytics and is optional. Now, create an object storage container on `castor.cscs.ch` under the appropriate project to mirror the contents of the `data/v0` directory (e.g. use `<app-name-data-v0>`).
+You will now have an empty directory, whose contents are tracked by DVC, but not yet synchronized with any remote storage. The second step disables DVC analytics and is optional.
+
+Now, you can create an object storage container on `castor.cscs.ch` under the appropriate project to mirror the contents of the `data/v0` directory (e.g. use `<app-name-data-v0>`).
 
 Then, configure your remote with 
 ```shell
@@ -288,7 +301,7 @@ dvc remote add --default --verbose castor s3://<name-of-your-castor-bucket>
 dvc remote modify --verbose castor endpointurl https://object.cscs.ch
 dvc remote modify --verbose castor profile <aws-profile-name>
 ```
-according to [this](https://user.cscs.ch/storage/object_storage/) and  [this](https://user.cscs.ch/storage/object_storage/usage_examples/boto/). The third command is necessary if you've put the newly created AWS credentials under a non-`default` AWS profile above (suggestion is to use that on castor.cscs.ch).
+according to the CSCS user documentation on [object storage](https://user.cscs.ch/storage/object_storage/) and the [boto client](https://user.cscs.ch/storage/object_storage/usage_examples/boto/). The third command is necessary if you've put the newly created AWS credentials under a non-`default` AWS profile above (suggestion is to use the profile name on castor.cscs.ch).
 
 The `.dvc/config` may look like this
 
@@ -302,9 +315,9 @@ The `.dvc/config` may look like this
     profile = <aws-profile-name>
 ```
 
-Further configuration options can be obtained either from [this discussion](https://github.com/iterative/dvc/issues/1029#issuecomment-414837587) or directly from the source code. 
+Further configuration options can be obtained either from [this discussion](https://github.com/iterative/dvc/issues/1029#issuecomment-414837587) or directly from DVC's source code. 
 
-You can then copy a DVC repo YAML definition of your choice from [data/dvc_tools/dvc_defs/repos](data/dvc_tools/dvc_defs/repos) to `data/v0/dvc_root.yaml`. After updating the `dvc_root` field to `.` (the relative path to `data/v0`) and if using EncFS [initializing an encrypted directory `encrypt`](data/dvc_tools/encfs_scripts/README.md), commit the newly set up DVC environment to Git with
+You can now copy a DVC repo YAML definition of your choice from [data/dvc_tools/dvc_defs/repos](data/dvc_tools/dvc_defs/repos) to `data/v0/dvc_root.yaml`. After updating the `dvc_root` field to `.` (the relative path to `data/v0`) and if using EncFS [initializing an encrypted directory](data/dvc_tools/encfs_scripts/README.md) `encrypt`, commit the newly set up DVC environment to Git with
 
 ```shell
 git add .dvc/config dvc_root.yaml encrypt/.encfs6.xml && git commit -m "Added data/v0 as a new DVC-tracked subdirectory with <name-of-your-castor-bucket> S3 bucket on Castor as a remote"
@@ -347,11 +360,16 @@ export AWS_CONFIG_FILE=$(realpath $(dvc root)/.aws_config)
 from within `data/v0`.
 
 
+# Running ML/simulation pipelines
+
+You are now ready to run an ML/simulation pipeline, e.g. as demonstrated using the instructions in the [ML repo tutorial](examples/ml_tutorial.md).
+
+
 # Deleting object storage containers on Castor
 
 When the data stored on Castor is no longer required, you can delete the associated object storage containers from within the castor environment
 ```shell
-source data/dvc_tools/openstack/cli/castor.env
+source data/dvc_tools/openstack/cli/castor-cli-otp.env
 ```
 by using the OpenStack swift client,
 ```shell

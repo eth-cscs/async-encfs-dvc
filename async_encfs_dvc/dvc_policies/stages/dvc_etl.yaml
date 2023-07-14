@@ -1,19 +1,19 @@
-# A generic preprocessing stage converting external input data to internal format
+# A generic preprocessing stage converting external input data to a workflow-specific format
 # All values are interpreted as paths relative to the host/container data (encfs) mount point
-# Make sure that folders in input/original/<dataset-name/version/stage> are 'dvc add'-ed if not output of a dvc stage.
+# Make sure that folders in in/<dataset-name/version>/original are 'dvc add'-ed if not output of a DVC stage.
 # Subsequent DVC stages may only depend on dvc-added folders/files or their subdirectories.
-# Can be used both for a command-line stage and a stage run outside of DVC (e.g. in a GUI, cf. app_prep)
+# Can be used both for a command-line stage and a manually run stage outside of DVC (e.g. in a GUI, cf. app_prep)
 
 etl_stage:
   input:  # input data dependencies
     etl:
-      stage_data: &input_etl_data [input_data/original, *etl_input_data, "{{input_etl or ''}}"]
+      stage_data: &input_etl_data [in, *etl_input_data, original, "{{input_etl or ''}}"]
       command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
         --etl-input: [*input_etl_data, "{{input_etl_file}}"]
 
   output:  # output data
     etl:
-      stage_data: &output_etl [input_data/preprocessed, *etl_input_data, *app_name, *stage_name, "{{run_label}}/output"]
+      stage_data: &output_etl [in, *etl_input_data, *app_name, *stage_name, "{{run_label}}/output"]
       command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
         --etl-output: *output_etl
 

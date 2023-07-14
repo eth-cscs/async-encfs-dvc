@@ -1,10 +1,29 @@
-# Initializing a subdirectory for usage of DVC and encfs
+# Installing EncFS
 
-To set up a DVC environment with encfs, change to the subdirectory intended as DVC root directory, initialize the dvc repo and create an encfs-managed directory using the following recommended configuration
+The easiest way to install EncFS is with the package manager of your distribution. On Piz Daint, EncFS is installed at `ENCFS_INSTALL_DIR=${APPS}/UES/anfink/encfs`.
+
+The installation from source depends on CMake. EncFS can be installed locally by running
+```shell
+$ ./compile.sh
+```
+The executable will be available at `install/bin/encfs`.
+
+# Creating an EncFS-managed DVC repository
+
+To set up a DVC environment with EncFS, change to the subdirectory intended as DVC root directory and initialize an EncFS-managed DVC repo
 
 ```shell
-$ dvc init --subdir
-$ mkdir encrypt decrypt config
+$ dvc_init_repo . encfs
+```
+
+This creates three directories:
+ * `encrypt` for the encrypted data managed by DVC
+ * `decrypt`, where EncFS mounts a decrypted view of the data
+ * `config` for DVC stage files to be committed to Git
+All of these have the same hierarchical organization of files into folders.
+
+To configure EncFS, the following configuration is recommended
+```shell
 $ ${ENCFS_INSTALL_DIR}/bin/encfs -o allow_root,max_write=1048576,big_writes -f encrypt decrypt
 Creating new encrypted volume.
 Please choose from one of the following options:
@@ -164,34 +183,28 @@ The configuration will be stored in a file `encrypt/.encfs6.xmli` and should loo
 </boost_serialization>
 ```
 
-Make a copy of `../dvc_defs/repos/dvc_root_encfs.yaml`
-```shell script
-cp ../dvc_defs/repos/dvc_root_encfs.yaml ./
-``` 
-and update the `dvc_root` path to `.`.
+# Using EncFS with DVC on a single node
 
-# Running jobs on a single host with encfs
-
-Before accessing encrypted data, always run the following command, which runs encfs in the foreground.
+Before interacting with encrypted data, EncFS must mount a decrypted view of the data in `encrypt`. Execute the following command in the DVC root directory.
 ```shell
-encfs_scripts$ ENCFS_PW_FILE=<path-to-encfs.key> ./launch.sh ../dvc_defs/repos/dvc_root_encfs.yaml 
+ENCFS_PW_FILE=<path-to-encfs.key> launch_encfs .dvc_policies/repo/dvc_root.yaml 
 ```
-This allows you to access the data through the encfs-mount target directory (usually `decrypt`). It is assumed that you installed encfs either with the package manager or by building the submodule (with `compile.sh`). On Piz Daint, encfs is installed at `ENCFS_INSTALL_DIR=${APPS}/UES/anfink/encfs` and to inspect files on a single node, you can use this script analogously,
-```shell
-encfs_scripts$ ENCFS_PW_FILE=<path-to-encfs.key> ./launch.sh ../dvc_defs/repos/dvc_root_encfs.yaml
-```
-and interrupt it (running in the foreground) when you're done. It will make the decrypted view available at `/tmp/encfs_$(id -u)` (this should be a repo-specific path if using multiple encfs-repos).
+This runs EncFS in the foreground and allows you to access the data through the EncFS-mounted target directory `decrypt` in another shell, e.g. to run a DVC stage on a single node or to inspect results of a previously run stage. As EncFS is run in the foreground it can be interrupted when you're done. 
 
-# Running SLURM jobs with encfs
+On Piz Daint, the decrypted view is made available on `/tmp/encfs_$(id -u)_async_encfs_dvc` as an EncFS-mount in other locations than `/tmp` is not allowed - this path should be made DVC-repo-specific if multiple EncFS-repos are used.
 
-On Piz Daint, you can wrap the rank-specific part of your srun-command in the script `encfs_mount_and_run_v2.sh` plus the encfs-root and mount target directory. This will mount (typically) your `encrypt` directory at `/tmp/encfs_$(id -u)` on each compute node using the encfs-password in `${ENCFS_PW_FILE}` for the duration of the command,
+# Running SLURM jobs with EncFS and DVC
+
+To run EncFS-jobs with SLURM on Piz Daint manually, you can wrap the rank-specific part of your `srun`-command in the script `encfs_mount_and_run_v2.sh` plus the EncFS-root and mount target directory. This will mount your `encrypt` directory at `<decrypt-dir>` (typically `/tmp/encfs_$(id -u)_async_encfs_dvc`) on each compute node using the EncFS-password in `${ENCFS_PW_FILE}` for the duration of the command,
 
 ```shell
-ENCFS_PW_FILE=<path-to-encfs.key> srun encfs_mount_and_run_v2.sh <encrypt-dir> <decrypt-dir> <log-file> <command>
+ENCFS_PW_FILE=<path-to-encfs.key> srun encfs_mount_and_run_v2.sh encrypt <decrypt-dir> <log-file> <command>
 ```
 
 You can run application stages of a pipeline on sensitive data through Sarus (providing the extra `SARUS_ARGS=env` environment) and bind-mount the decrypted directory to make it available within the container, e.g. by appending the following command to the above `srun` line,
 ```shell
-sarus run --mount=type=bind,source=/tmp/encfs_$(id -u),destination=/app-data ...
+sarus run --mount=type=bind,source=<decrypt-dir>,destination=/app-data ...
 ```
-This makes the decrypted view of the data in `<encrypt-dir>` available at the mounted path `/app-data` within the container of each SLURM MPI-rank. The `...` are the usual arguments, such as ` --mpi --entrypoint bash <image-name:tag> -c '<command-to-execute>'`.
+This makes the decrypted view of the data in `encrypt` available at the mounted path `/app-data` within the container of each SLURM MPI-rank. The `...` are the usual arguments, such as ` --mpi --entrypoint bash <image-name:tag> -c '<command-to-execute>'`.
+
+To ease the user experience, these commands are automatically generated from DVC policies when using the EncFS repo policy and specifying a container engine in the app policy.

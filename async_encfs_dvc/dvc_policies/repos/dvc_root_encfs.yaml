@@ -1,7 +1,7 @@
 # DVC repo configuration with encfs-encryption
 
 host_data:
-  dvc_root: &dvc_root_host ../../../demo_encfs  # output of `dvc root` in any subdirectory of this dir
+  dvc_root: &dvc_root_host ../..  # output of `dvc root`
   dvc_config: &dvc_config_host config
   mount:  # relative to dvc_root_host
     data:
@@ -10,4 +10,4 @@ host_data:
       default_target: &mount_data_host decrypt  # make sure this is a dvc-repo-specific path if it is absolute
       custom_target:  # machine-specific
         - machine: ['daint[\d]+', 'nid[\d]+']
-          target: /tmp/encfs_$(id -u)_demo_encfs  # make sure this is dvc-repo-specific if using multiple encfs-repos
+          target: /tmp/encfs_$(id -u)_async_encfs_dvc  # make sure this is a dvc-repo-specific path if using multiple encfs-repos

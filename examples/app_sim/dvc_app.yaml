@@ -49,6 +49,5 @@ container_data:  # takes only effect if container_engine is not 'none'
 
 # include dvc-root/mounts and stage type information
 include:
-  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
-  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml'
-  simulation_stage: '../data/dvc_tools/dvc_defs/stages/dvc_simulation.yaml'
+  dvc_root: '../data/v0/.dvc_policies/repo/dvc_root.yaml'
+  simulation_stage: '../data/v0/.dvc_policies/stages/dvc_simulation.yaml'

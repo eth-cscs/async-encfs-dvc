@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Provide DVC root directory as an argument
+if [ "$#" -ne 2 ]; then
+    echo "Provide the root directory of the new DVC repository as the first and the repo policy (either plain or encfs) as the second argument."
+    exit 1
+fi
+
+if [ ! -d "$1" ]; then
+    echo "The first argument must be the root directory of the new DVC repository."
+    exit 1
+fi
+
+if [ "$2" != "plain" ] && [ "$2" != "encfs" ]; then
+    echo "The second argument must be the repo policy (either plain or encfs)."
+    exit 1
+fi
+
+# Use pushd to change to the new DVC root directory and add it to the stack
+pushd "$1" >/dev/null
+
+# Initialize DVC repo
+dvc init --subdir --verbose
+dvc config core.analytics false
+
+# Initialize repo and stage policies
+ASYNC_ENCFS_DVC_PATH="$(python -c 'import async_encfs_dvc, os; print(os.path.dirname(async_encfs_dvc.__file__))')"
+
+# Copy repo policy
+mkdir -p .dvc_policies/repo
+
+if [ "$2" == "plain" ]; then
+    cp ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/repos/dvc_root_plain.yaml .dvc_policies/repo/ && \
+  mv .dvc_policies/repo/dvc_root{_plain,}.yaml 
+fi
+
+if [ "$2" == "encfs" ]; then
+    mkdir encrypt decrypt config
+    cp ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/repos/dvc_root_encfs.yaml .dvc_policies/repo/ && \
+ mv .dvc_policies/repo/dvc_root{_encfs,}.yaml
+fi
+
+# Copy stage policies
+cp -r ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/stages .dvc_policies/
+
+popd >/dev/null
+
+echo "Initialized DVC repo ($2) and stage policies."

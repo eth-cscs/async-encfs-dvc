@@ -1,2 +1,18 @@
-**/.ipynb_checkpoints
+# Byte-compiled/optimized files
+**/__pycache__
+
+# Distribution/packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Environments
 **/venv
+**/tox_venv
+
+# Jupyter notebook
+**/.ipynb_checkpoints
+
+# Tests
+.tox/

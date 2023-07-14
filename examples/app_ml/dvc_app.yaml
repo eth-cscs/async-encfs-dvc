@@ -1,20 +1,20 @@
 # app_ml version 2 description for DVC stage generation
 
 app:
-  name: &app_name app_ml/v2  # apps should always be versioned
+  name: &app_name app_ml/ml_dataset_v1/model_name_v2  # apps should always be versioned, dataset can be absorbed into model in case of redundancy
   container_engine: none # can be none, docker or sarus (container_data only takes effect for the latter two)
 #  container_opts:
 #    --gpus: # GPU-support for docker
 #    --mpi:  # required when using MPI inside Sarus containers
   image: app_ml # container image to use (only takes effect if container_engine != none)
   # absolute path or "\\$(git rev-parse --show-toplevel)/..." with container_engine == none
-  code_root: &code_root "\\$(git rev-parse --show-toplevel)/app_ml"  # /src/app
+  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_ml"  # /src/app
 
   stages: # app-specific stages
     inference:
       type: ml_inference_stage # refers to included stage definition
       input_inference: # parameterizes stage
-        name: &inference_input_app_name input_data/preprocessed/ml_dataset/v1/inference/app_prep/v1
+        name: &inference_input_app_name in/ml_dataset_v1/inference/app_prep_v1
         stage: &inference_input_app_stage auto
       # use the following to run with MPI
       mpi_exec: mpiexec  # can be used to override default mpiexec if needed
@@ -42,10 +42,10 @@ app:
     training:
       type: ml_training_stage
       input_training: # parameterizes training data dep
-        name: &training_input_app_name input_data/preprocessed/ml_dataset/v1/training/app_prep/v1
+        name: &training_input_app_name in/ml_dataset_v1/training/app_prep_v1
         stage: &training_input_app_stage manual  # should be overwritable from CLI
       input_test: # parameterizes test data dep
-        name: &test_input_app_name input_data/preprocessed/ml_dataset/v1/test/app_prep/v1
+        name: &test_input_app_name in/ml_dataset_v1/test/app_prep_v1
         stage: &test_input_app_stage auto  # should be overwritable from CLI
       # use the following to run with MPI
       mpi_exec: mpiexec  # can be used to override default mpiexec if needed
@@ -78,7 +78,6 @@ container_data:  # takes only effect if container_engine is not 'none'
 
 # include dvc-root/mounts and stage type information
 include:
-  dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_plain.yaml'
-  # alternatively: dvc_root: '../data/dvc_tools/dvc_defs/repos/dvc_root_encfs.yaml'
-  ml_inference_stage: '../data/dvc_tools/dvc_defs/stages/dvc_ml_inference.yaml'
-  ml_training_stage: '../data/dvc_tools/dvc_defs/stages/dvc_ml_training.yaml'
+  dvc_root: '../data/v0/.dvc_policies/repo/dvc_root.yaml'
+  ml_inference_stage: '../data/v0/.dvc_policies/stages/dvc_ml_inference.yaml'
+  ml_training_stage: '../data/v0/.dvc_policies/stages/dvc_ml_training.yaml'
