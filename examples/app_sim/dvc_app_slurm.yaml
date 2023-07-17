@@ -3,7 +3,7 @@
 app:
   name: &app_name app_sim_v1/sim_dataset_v1  # apps should always be versioned
   # container_engine can be none, docker or sarus (container_data only takes effect for the latter two)
-  container_engine: docker
+  container_engine: sarus
 #  container_opts:
 #    --mpi:  # required when using MPI inside Sarus containers
   image: load/async-encfs-dvc/app_sim  # container image to use (only takes effect if container_engine != none)
@@ -17,23 +17,23 @@ app:
         name: &simulation_input_app_name in/sim_dataset_v1/app_prep_v1
         stage: &simulation_input_app_stage auto
       # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
+#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_opts:
+#        -np: 2
       # use the following to run with SLURM
-      # slurm_opts:
-      #   stage:
-      #     --nodes: 8
-      #     --ntasks: 16
-      #     --cpus-per-task: 12
-      #     --constraint: gpu
-      #     --time: '01:00:00'
-      #   dvc:
-      #     --cpus-per-task: 24
-      #     --constraint: mc
-      #     --time: '12:00:00'
-      #   all:
-      #     --account: csstaff
+      slurm_opts:
+        stage:
+          --nodes: 8
+          --ntasks: 16
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '01:00:00'
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: '12:00:00'
+        all:
+          --account: csstaff
       script: [*code_root, simulation.sh]
       # for script simulation.sh
       # (note that these options are not processed w.r.t. dvc_root_host)
@@ -47,23 +47,23 @@ app:
         name: &simulation_input_app_name app_sim_v1/sim_dataset_v1
         stage: &simulation_input_app_stage simulation
       # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
+#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_opts:
+#        -np: 2
       # use the following to run with SLURM
-      # slurm_opts:
-      #   stage:
-      #     --nodes: 8
-      #     --ntasks: 16
-      #     --cpus-per-task: 12
-      #     --constraint: gpu
-      #     --time: '01:00:00'
-      #   dvc:
-      #     --cpus-per-task: 24
-      #     --constraint: mc
-      #     --time: '12:00:00'
-      #   all:
-      #     --account: csstaff
+      slurm_opts:
+        stage:
+          --nodes: 8
+          --ntasks: 16
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '01:00:00'
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: '12:00:00'
+        all:
+          --account: csstaff
       script: [*code_root, simulation.sh]
       # for script simulation.sh
       # (note that these options are not processed w.r.t. dvc_root_host)

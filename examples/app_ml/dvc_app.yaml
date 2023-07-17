@@ -6,7 +6,7 @@ app:
 #  container_opts:
 #    --gpus: # GPU-support for docker
 #    --mpi:  # required when using MPI inside Sarus containers
-  image: app_ml # container image to use (only takes effect if container_engine != none)
+  # image: load/async-encfs-dvc/app_ml # container image to use (only takes effect if container_engine != none)
   # absolute path or "\\$(git rev-parse --show-toplevel)/..." with container_engine == none
   code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_ml"  # /src/app
 
@@ -76,8 +76,8 @@ container_data:  # takes only effect if container_engine is not 'none'
     data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host
 
 
-# include dvc-root/mounts and stage type information
+# include dvc-root/mounts and stage type information (paths relative to DVC root)
 include:
-  dvc_root: '../data/v0/.dvc_policies/repo/dvc_root.yaml'
-  ml_inference_stage: '../data/v0/.dvc_policies/stages/dvc_ml_inference.yaml'
-  ml_training_stage: '../data/v0/.dvc_policies/stages/dvc_ml_training.yaml'
+  dvc_root: '.dvc_policies/repo/dvc_root.yaml'
+  ml_inference_stage: '.dvc_policies/stages/dvc_ml_inference.yaml'
+  ml_training_stage: '.dvc_policies/stages/dvc_ml_training.yaml'

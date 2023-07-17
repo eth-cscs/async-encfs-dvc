@@ -28,15 +28,26 @@ import glob
 import shutil
 import yaml
 from jinja2 import Environment, BaseLoader, meta, StrictUndefined
+import async_encfs_dvc
 
 
 def run_shell_cmd(command):
     return sp.run(command, shell=True, check=True, capture_output=True).stdout.decode('utf-8').rstrip('\n')
 
 
+def dvc_root():
+    """Get DVC root directory or throw exception if not in a DVC repo"""
+
+    dvc_root_sp = sp.run("dvc root", shell=True, check=True, stdout=sp.PIPE)
+    return dvc_root_sp.stdout.decode().strip('\n')
+
+
 # 1. step: generate dvc_app.yaml by merging with includes and move to dvc_dir
 def make_full_app_yaml(app_yaml_file, stage, default_run_label):
     """Parse dvc_app.yaml and assemble full app-yaml using include references"""
+
+    dvc_root_rel_to_app_yaml = os.path.relpath(dvc_root(),
+                                               os.path.dirname(app_yaml_file))
 
     cwd = os.getcwd()
     os.chdir(os.path.dirname(app_yaml_file))
@@ -120,8 +131,9 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
         app_yaml = yaml.load(app_yaml_str, Loader=yaml.FullLoader)
 
     # Previous version without YAML parsing
-    append_to_app_yaml_cmd = " && ".join([f"cat {app_yaml_include} >> {tmp_full_app_yaml_file}"
-                                          for app_yaml_include in app_yaml['include'].values()])
+    append_to_app_yaml_cmd = " && ".join(
+        [f"cat {os.path.join(dvc_root_rel_to_app_yaml, app_yaml_include)} >> {tmp_full_app_yaml_file}"
+         for app_yaml_include in app_yaml['include'].values()])
     sp.run(append_to_app_yaml_cmd, shell=True, check=True)
 
     tmp_full_app_yaml_file = os.path.abspath(tmp_full_app_yaml_file)
@@ -140,8 +152,10 @@ def load_full_app_yaml(filename, load_orig_dvc_root=False):
         yaml_filename = run_shell_cmd(f"echo \"{full_app_yaml['original']['file']}\"")
     else:
         yaml_filename = filename
+    yaml_file_dir = os.path.dirname(yaml_filename)
     full_app_yaml['host_data']['dvc_root'] = \
-        os.path.realpath(os.path.join(os.path.dirname(yaml_filename),
+        os.path.realpath(os.path.join(yaml_file_dir,
+                                      os.path.relpath(dvc_root(), yaml_file_dir),
                                       os.path.dirname(full_app_yaml['include']['dvc_root']),
                                       full_app_yaml['host_data']['dvc_root']))
     return full_app_yaml, full_app_yaml['host_data']['dvc_root']
@@ -215,7 +229,7 @@ def get_validated_path(yaml_filename, is_input=True):
 
 
 # 2. step: Find all Jinja2 template variables in dvc_app.yaml, parse args and substitute
-def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_label):
+def parse_stage_args_and_substitute(full_app_yaml_template_file, stage, default_run_label):
 
     full_app_yaml, host_dvc_root = load_full_app_yaml(full_app_yaml_template_file)
 
@@ -231,7 +245,7 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, default_run_lab
                         help="DVC stage generation configuration file")
     parser.add_argument("--stage", type=str, required=True,
                         help=f"DVC stage to run under app/stages in app-yaml "
-                             f"(options from {app_yaml_file}: {list(full_app_yaml['app']['stages'].keys())} )")
+                             f"(options from {full_app_yaml_template_file}: {list(full_app_yaml['app']['stages'].keys())} )")
     parser.add_argument("--run-label", type=str, default=default_run_label,
                         help="Label (suffix) of DVC stage (defaults to <timestamp>_<hostname>)")
     parser.add_argument("--strict-mode", action='store_true',
@@ -431,7 +445,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     stage_data_deps = dict()
     for data_flow in ['input', 'output']:
         stage_data_deps[data_flow] = []
-        for el in stage_def[data_flow]:
+        for el in stage_def.get(data_flow, dict()):
             stage_data_deps[data_flow].append(
                 dict(host_stage_data=get_validated_path([mounts['data']['origin']] +
                                                         stage_def[data_flow][el]['stage_data'],
@@ -441,7 +455,8 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
                      container_stage_data=get_expanded_path([mounts['data']['container']] +
                                                             stage_def[data_flow][el]['stage_data']),
                      command_line_options={opt: [mounts['data']['container']] + val
-                                           for opt, val in stage_def[data_flow][el]['command_line_options'].items()}))
+                                           for opt, val in
+                                           stage_def[data_flow][el].get('command_line_options', dict()).items()}))
 
     # container-command
     def mount_cmd(mount_dir, is_host):
@@ -487,7 +502,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
             os.path.join(stage_data_deps['output'][0]['host_mounted_stage_data'], "encfs_out_{MPI_RANK}.log"), dvc_dir)
 
         # Could also use dvc_root_encfs.yaml directly as arg to encfs_mount_and_run_v2.sh (cf. launch.sh)
-        encfs_command = f"{os.path.join(dvc_utils_rel_to_dvc_dir, 'encfs_scripts/encfs_mount_and_run_v2.sh')} " \
+        encfs_command = f"encfs_mount_and_run_v2.sh " \
                         f"{encfs_root_dir} {encfs_mounted_dir} {encfs_log_file}"
 
         # Wrap container command into encfs-mount
@@ -572,7 +587,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
                shell=True, check=True)
 
 
-if __name__ == '__main__':
+def main():
     app_yaml_argv_index = sys.argv.index('--app-yaml')
     if app_yaml_argv_index == -1:
         raise RuntimeError("Commandline option --app-yaml is required")
@@ -597,7 +612,7 @@ if __name__ == '__main__':
         # 1. step: generate dvc_app.yaml by merging with includes and move to dvc_dir
         tmp_full_app_yaml_file = make_full_app_yaml(app_yaml_file, stage, default_run_label)
         # 2. step: Find all Jinja2 template variables in dvc_app.yaml, parse args and substitute
-        args = parse_stage_args_and_substitute(tmp_full_app_yaml_file, default_run_label)
+        args = parse_stage_args_and_substitute(tmp_full_app_yaml_file, stage, default_run_label)
         # 3. step: Assemble dvc-run command from rendered dvc_app.yaml
         create_dvc_stage(full_app_yaml_file=tmp_full_app_yaml_file, args=args, load_orig_dvc_root=False)
     else:
@@ -610,3 +625,6 @@ if __name__ == '__main__':
         # 3. step: Assemble dvc-run command from rendered dvc_app.yaml
         create_dvc_stage(full_app_yaml_file=args.app_yaml, args=args, load_orig_dvc_root=True)
 
+
+if __name__ == '__main__':
+    main()

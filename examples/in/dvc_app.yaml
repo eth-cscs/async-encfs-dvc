@@ -1,0 +1,18 @@
+# app_prep version 1 description for DVC stage generation
+
+app:
+  name: &app_name in_original
+  container_engine: none
+
+  stages:
+    # this is a drop-in replacement for dvc add when using EncFS
+    # (creates a frozen DVC stage, when completed update output with 'dvc commit <stage-name>)
+    add:
+      type: in_stage
+      frozen: True
+      script: "true"
+
+# include dvc-root/mounts and stage type information (paths relative to DVC root)
+include:
+  dvc_root: ".dvc_policies/repo/dvc_root.yaml"
+  in_stage: ".dvc_policies/stages/dvc_in.yaml"

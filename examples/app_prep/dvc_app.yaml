@@ -17,11 +17,12 @@ app:
       name: &stage_name manual
       input_data: # parameterizes stage
         name: &etl_input_data ml_dataset_v1/training  # replace ml_dataset with the name of a specific dataset
-      # mpi_opts/slurm_opts not used as never run
+      # mpi_opts/slurm_opts not used as stage never run
       # script is never run (commandline params are not checked, but should be used in manual execution)
       script: "true"
 
-    auto_test:  # an automated (standard) DVC stage
+    # an automated (standard) DVC stage
+    auto_test:
       type: etl_stage
       frozen: False
       name: &stage_name auto
@@ -30,7 +31,7 @@ app:
       # mpi_opts/slurm_opts can go here
       script: [*code_root, prep.sh]  # the automated ETL step
 
-    auto_inf:  # an automated (standard) DVC stage
+    auto_inf:
       type: etl_stage
       frozen: False
       name: &stage_name auto
@@ -39,6 +40,16 @@ app:
       # mpi_opts/slurm_opts can go here
       script: [*code_root, prep.sh]
 
+    sim:
+      type: etl_stage
+      frozen: False
+      name: &stage_name auto
+      input_data:
+        name: &etl_input_data sim_dataset_v1
+      # mpi_opts/slurm_opts can go here
+      script: [*code_root, prep.sh]
+
+# include dvc-root/mounts and stage type information (paths relative to DVC root)
 include:
-  dvc_root: "../data/v0/.dvc_policies/repo/dvc_root.yaml"
-  etl_stage: "../data/v0/.dvc_policies/stages/dvc_etl.yaml"
+  dvc_root: ".dvc_policies/repo/dvc_root.yaml"
+  etl_stage: ".dvc_policies/stages/dvc_etl.yaml"

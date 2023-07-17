@@ -13,20 +13,23 @@ setup(
             'examples',
         )),    
     install_requires=[
-        'dvc[s3] @ git+https://github.com/lukasgd/dvc.git@fix_interpolate_env_var',
-        'jinja2',
-        # 'openstack @ git+https://github.com:eth-cscs/openstack.git # managed through package_data
+        # 'openstack @ git+https://github.com/eth-cscs/openstack.git # managed through package_data
         'python-openstackclient',
         'lxml',
         'oauthlib',
         'python-swiftclient',
-        'python-heatclient'
+        'python-heatclient',
+        'jinja2',
+        'dvc[s3] @ git+https://github.com/lukasgd/dvc.git@fix_interpolate_env_var',
     ],
     extras_require={},
     include_package_data=True,
     scripts=[
         'async_encfs_dvc/dvc_init_repo',
-        'async_encfs_dvc/dvc_create_stage',
-        'async_encfs_dvc/encfs_scripts/launch_encfs',
-    ]
+        'async_encfs_dvc/encfs_scripts/encfs_launch',
+        'async_encfs_dvc/encfs_scripts/encfs_mount_and_run_v2.sh',
+    ],
+    entry_points = {
+        'console_scripts': ['dvc_create_stage=async_encfs_dvc.dvc_create_stage:main']
+    }
 )

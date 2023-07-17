@@ -37,7 +37,7 @@ elif [ -d "${APPS}/UES/anfink/encfs" ]; then
 elif [ -f "${ENCFS_INSTALL_DIR}/bin/encfs" ]; then
     ENCFS_BIN="${ENCFS_INSTALL_DIR}/bin/encfs"
 else
-    ENCFS_BIN="$(dirname "$0")/encfs/install/bin/encfs"
+    log_error "Error: could not find an encfs executable - is ENCFS_INSTALL_DIR properly set?"
 fi
 
 if [[ ! -f "${ENCFS_BIN}" || ! -x "${ENCFS_BIN}" ]]; then

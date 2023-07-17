@@ -1,8 +1,8 @@
 # Installing EncFS
 
-The easiest way to install EncFS is with the package manager of your distribution. On Piz Daint, EncFS is installed at `ENCFS_INSTALL_DIR=${APPS}/UES/anfink/encfs`.
+The easiest way to install EncFS is with the package manager of your distribution. On Piz Daint, EncFS is already pre-installed at `ENCFS_INSTALL_DIR=${APPS}/UES/anfink/encfs`.
 
-The installation from source depends on CMake. EncFS can be installed locally by running
+For the installation from source, CMake is required. EncFS can be installed locally by running
 ```shell
 $ ./compile.sh
 ```
@@ -187,7 +187,7 @@ The configuration will be stored in a file `encrypt/.encfs6.xmli` and should loo
 
 Before interacting with encrypted data, EncFS must mount a decrypted view of the data in `encrypt`. Execute the following command in the DVC root directory.
 ```shell
-ENCFS_PW_FILE=<path-to-encfs.key> launch_encfs .dvc_policies/repo/dvc_root.yaml 
+ENCFS_PW_FILE=<path-to-encfs.key> encfs_launch .dvc_policies/repo/dvc_root.yaml 
 ```
 This runs EncFS in the foreground and allows you to access the data through the EncFS-mounted target directory `decrypt` in another shell, e.g. to run a DVC stage on a single node or to inspect results of a previously run stage. As EncFS is run in the foreground it can be interrupted when you're done. 
 

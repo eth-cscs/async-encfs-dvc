@@ -1,0 +1,9 @@
+# An input stage as a workaround for the missing --file option of dvc add in newer releases of DVC
+
+in_stage:
+  # no data dependencies
+  output:  # output data
+    in:
+      stage_data: &output_in [in, "{{dataset_name}}/original/{{subset_name}}/output"]
+
+  dvc: [*output_in, ".."]

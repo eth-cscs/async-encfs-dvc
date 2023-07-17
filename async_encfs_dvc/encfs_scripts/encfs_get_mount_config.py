@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Get SLURM options from dvc stage sys.argv[2] in dvc_app.yaml at sys.argv[1] for --stage or --dvc job (sys.argv[3])
 
