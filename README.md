@@ -1,18 +1,16 @@
-# Data version control in privacy-preserving HPC workflows using DVC, EncFS, SLURM and Openstack Swift on castor.cscs.ch
+# Data version control in privacy-preserving HPC workflows using DVC, EncFS, SLURM and Openstack Swift
 
-This project applies infrastructure-as-code principles to [DVC](https://dvc.org) and integrates it with [EncFS](https://github.com/vgough/encfs) and [SLURM](https://slurm.schedmd.com) to track results of scientific HPC workflows in a privacy-preserving manner, exchanging them via the OpenStack Swift object storage at `castor.cscs.ch`.
+This project applies infrastructure-as-code principles to [DVC](https://dvc.org) and integrates it with [EncFS](https://github.com/vgough/encfs) and [SLURM](https://slurm.schedmd.com) to track results of scientific HPC workflows in a privacy-preserving manner, exchanging them via the OpenStack Swift object storage at https://castor.cscs.ch.
 
 The **key features** extending DVC include
 * SLURM integration for HPC clusters: DVC stages and their dependencies can be executed asynchronously using SLURM (`dvc repro` submits a SLURM job, `dvc commit` is run upon job completion)
 * privacy-preservation: DVC stages can utilize a transparently encrypted filesystem with [EncFS](https://github.com/vgough/encfs) ensuring no unencrypted data is persisted to storage or exchanged through DVC (see [further details](async_encfs_dvc/encfs_scripts/README.md))
-* container engine support: DVC stages can be run with Docker and [Sarus](https://github.com/eth-cscs/sarus). Code dependencies are tracked via Git-SHA-tagged container images, making stages fully re-executable
-* infrastructure-as-code practice: DVC repository structure and stage policies can be encoded into reusable YAML definitions, enabling applications to generate DVC stages that conform to these requirements
+* container support: DVC stages can be run with the Docker and [Sarus](https://github.com/eth-cscs/sarus) engines such that code dependencies are tracked via Git-SHA-tagged container images, making stages fully re-executable
+* infrastructure-as-code practice: DVC repository and stage structure can be encoded into reusable YAML policies, enabling different users to generate DVC stages that comply to the same workflow organization
 
-These capabilities extend, rather than modify, DVC and can largely be used independently. They are exemplified on three demo applications, [app_ml](app_ml) for a machine learning application, [app_sim](app_sim) for a simulation and [app_prep](app_prep) for a preprocessing step (manual and automated). Each of them is accompanied by a corresponding stage policy that can be customized inside a DVC repository to reflect evolving requirements. 
+These capabilities extend, rather than modify, DVC and can largely be used independently. The repository includes three demo applications as surrogates for workflow stages - [app_ml](app_ml) for a machine learning application, [app_sim](app_sim) for a simulation and [app_prep](app_prep) for a preprocessing step that is performed manually or automated. Each of them is accompanied by a corresponding app policy that references repository and stage policies, all of which can be customized inside a DVC repository to reflect evolving requirements. A scientific workflow may also include custom application protocols. These could be defined in an additional package (e.g. another folder on the same level als `app_...`) and imported by the participating applications. It is important to note that DVC does not have a concept for application protocols, but only tracks dependencies between files.
 
-A real-world scenario may also include custom application protocols. They can be defined in an additional package (e.g. `app_protocol`) that is imported by the participating applications. It is important to note that DVC does not have a concept for application protocols, but only tracks dependencies between files.  
-
-Thus, the project aims to provide a flexible platform that can be customized according to specific project needs. For an overview of the tool's usage and performance results on Piz Daint and Castor object storage, refer to the [usage](#usage) section and [performance report](#performance-on-piz-daint-and-castor) respectively.
+The next sections cover the [installation](#installation) and [usage](#usage) of the tool. In particular, the latter gives an overview on use cases in a set of tutorial notebooks. For an overview on performance on Piz Daint and [Castor](https://castor.cscs.ch)'s object storage, refer to the section and [performance report](#performance-on-piz-daint-and-castor). Finally, we go into more detail in the section on [usage and implementation](#usage-details-and-implementation-insights).
 
 # Installation
 
@@ -26,13 +24,13 @@ This will install all dependencies except for EncFS. If encryption is required, 
 
 A set of notebooks illustrating the usage of individual features is avaialble in the [examples](examples) directory.
 
-* a demonstration of DVC stage generation with infrastructure-as-code principles for an Machine Learning pipeline is available under the [ML repository tutorial](examples/ml_tutorial.ipynb).
-* a tutorial on running DVC stages of an iterative simulation workflow with Docker containers on encrypted data can be found under the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb). This workflow is also available as a [performance benchmark](benchmarks) (see [below](#performance-on-piz-daint-and-castor))
-* an example of running DVC stages with SLURM and Sarus containers is available under the [SLURM tutorial](examples/slurm_sim_tutorial.ipynb).
+* a demonstration of DVC stage generation with infrastructure-as-code principles for a machine learning pipeline is available under the [ML repository tutorial](examples/ml_tutorial.ipynb).
+* a tutorial on an iterative simulation workflow with Docker containers on encrypted data can be found under the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb). This workflow is also available as a [performance benchmark](benchmarks) (see [results](#performance-on-piz-daint-and-castor) below)
+* an example of running a DVC workflow with SLURM and Sarus containers is available under the [SLURM tutorial](examples/slurm_sim_tutorial.ipynb).
 
 For a step-by-step guide on setting up a DVC repository to track workflow results, (optionally) using encryption and [Castor](https://castor.cscs.ch)'s object storage as a remote, please refer to the [setup guide](setup_guide.md).
 
-The test suite can be run with `tox`. If EncFS is not installed locally, use `tox -e py38-default` to only run non-EncFS tests. In contrast, to run EncFS-tests exclusively run `tox -e py38-encfs`.
+The project also includes a test suite that can be run with `tox`. If EncFS is not installed locally, use `tox -e py38-default` to only run non-EncFS tests. In contrast, to run only EncFS-tests, execute `tox -e py38-encfs`.
 
 
 # Performance on Piz Daint and Castor
