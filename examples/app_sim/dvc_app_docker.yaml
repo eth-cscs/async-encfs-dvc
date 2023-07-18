@@ -2,7 +2,13 @@
 
 app:
   name: &app_name app_sim_v1/sim_dataset_v1  # apps should always be versioned
-  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_sim"
+  # container_engine can be none, docker or sarus (container_data only takes effect for the latter two)
+  container_engine: docker
+#  container_opts:
+#    --mpi:  # required when using MPI inside Sarus containers
+  image: load/async-encfs-dvc/app_sim  # container image to use (only takes effect if container_engine != none)
+  # absolute path or "\\$(git rev-parse --show-toplevel)/..." with container_engine == none
+  code_root: &code_root /src/app
 
   stages: # app-specific stages
     base_simulation:
@@ -64,6 +70,11 @@ app:
       extra_command_line_options:
         --simulation-output-file-num-per-rank: "{{ simulation_output_file_num_per_rank }}"
         --simulation-output-file-size: "{{ simulation_output_file_size }}"
+
+
+container_data:  # takes only effect if container_engine is not 'none'
+  mount:  # absolute path in container (mount target for data - either plain or encfs)
+    data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host
 
 
 # include dvc-root/mounts and stage type information

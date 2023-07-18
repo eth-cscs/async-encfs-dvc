@@ -2,13 +2,19 @@
 
 set -x
 case "$1" in
+  none ) dvc_app_yaml=dvc_app.yaml ;;  # must be <= 10^6
+  docker ) dvc_app_yaml=dvc_app_docker.yaml ;;
+  slurm ) dvc_app_yaml=dvc_app_slurm.yaml ;;
+  * ) echo "Unknown option $1 for container/app-yaml policy (allowed: none, docker, slurm)"; exit 1 ;;
+esac
+case "$2" in
   small-files ) output_files_per_rank=10000 ;;  # must be <= 10^6
   medium-files ) output_files_per_rank=1000 ;;
   large-files ) output_files_per_rank=1 ;;
-  * ) echo "Unknown option $1 for output file size (allowed: small-files, medium-files or large-files)"; exit 1 ;;
+  * ) echo "Unknown option $2 for output file size (allowed: small-files, medium-files or large-files)"; exit 1 ;;
 esac
-start_stage="$2"
-end_stage="$3"
+start_stage="$3"
+end_stage="$4"
 set +x
 
 dvc_root="$(dvc root)"
@@ -32,7 +38,7 @@ cd "${config_prefix}"app_sim_v1/sim_dataset_v1/simulation/$((start_stage-1)) && 
 
 # actual benchmark stages
 for i in $(seq ${start_stage} ${end_stage}); do
-  dvc_create_stage --app-yaml $(git rev-parse --show-toplevel)/examples/app_sim/dvc_app.yaml --stage simulation \
+  dvc_create_stage --app-yaml $(git rev-parse --show-toplevel)/examples/app_sim/${dvc_app_yaml} --stage simulation \
     --run-label $i --input-simulation $((i-1)) \
     --simulation-output-file-num-per-rank ${output_files_per_rank} \
     --simulation-output-file-size $((10**9 * 2**(i-start_stage) / output_files_per_rank))

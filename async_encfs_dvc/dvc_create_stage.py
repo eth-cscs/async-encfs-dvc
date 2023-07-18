@@ -407,7 +407,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     # Accumulate dvc stage add command, starting with host (-> encfs) -> container (runtime) mount mappings
     mounts = dict()
     for mount_name, mount_config in full_app_yaml['host_data']['mount'].items():
-        if full_app_yaml['app']['container_engine'] != 'none':
+        if 'container_engine' in full_app_yaml['app'] and full_app_yaml['app']['container_engine'] != 'none':
             assert mount_name in full_app_yaml['container_data']['mount']
         if mount_config['type'] == 'plain':
             mounts[mount_name] = {'origin': mount_config['origin'],
@@ -434,7 +434,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
         else:
             raise RuntimeError(f"Unsupported mount config {mount_name} of type {mount_config['type']}.")
         # Could rename mounts[mount_name]['container'] -> mounts[mount_name]['runtime']
-        if full_app_yaml['app']['container_engine'] == 'none':
+        if 'container_engine' not in full_app_yaml['app'] or full_app_yaml['app']['container_engine'] == 'none':
             if os.path.isabs(mounts[mount_name]['host']):
                 mounts[mount_name]['container'] = mounts[mount_name]['host']
             else:
@@ -465,7 +465,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
                 else f"\$(realpath {os.path.relpath(mount_dir, dvc_dir)})"
         return "\\\"{}\\\"".format(mount_dir)
 
-    if full_app_yaml['app']['container_engine'] == 'none':
+    if 'container_engine' not in full_app_yaml['app'] or full_app_yaml['app']['container_engine'] == 'none':
         container_command = "bash -c"
     elif full_app_yaml['app']['container_engine'] == 'docker':
         container_engine_opts = full_app_yaml['app'].get('container_opts', {})

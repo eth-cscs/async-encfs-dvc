@@ -1,0 +1,5 @@
+async_encfs_dvc/encfs_scripts/encfs
+examples/data
+examples/data_benchmark
+.tox
+tox_venv

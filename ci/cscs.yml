@@ -1,0 +1,40 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - build_base # build stage is running on Kubernetes cluster
+  - build      # build stage is running on Kubernetes cluster
+  - test       # test stage is runnung on SLURM cluster
+
+variables:
+  PERSIST_IMAGE_NAME: $CSCS_REGISTRY_PATH/software/async-encfs-dvc:$CI_COMMIT_SHORT_SHA
+
+build-base:
+  extends: .container-builder-dynamic-name
+  stage: build_base
+  variables:
+    DOCKERFILE: ci/Dockerfile.base
+    PERSIST_IMAGE_NAME: $CSCS_REGISTRY_PATH/base/async-encfs-dvc_base_image
+    WATCH_FILECHANGES: 'ci/Dockerfile.base'
+
+build-async-encfs-dvc:
+  extends: .container-builder
+  stage: build
+  variables:
+    DOCKERFILE: ci/Dockerfile
+    DOCKER_BUILD_ARGS: '["BASE_IMG=$BASE_IMAGE"]'
+    GIT_SUBMODULE_STRATEGY: recursive
+
+test-single-node:
+  extends: .container-runner-daint-mc
+  stage: test
+  image: $PERSIST_IMAGE_NAME
+  script:
+    - cd /async_encfs_dvc && tox -e py38-default
+  variables:
+    SLURM_JOB_PARTITION: normal
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_NTASKS: 1
+    SLURM_CPUS_PER_TASK: 36
+    SLURM_TIMELIMIT: "00:30:00"
+    USE_MPI: "NO"
