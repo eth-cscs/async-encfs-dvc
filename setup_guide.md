@@ -55,7 +55,7 @@ The following steps only have to be performed once per project. To set up a subd
 ```shell
 dvc_init_repo . <repo-policy>
 ```
-You will now have an empty directory, whose contents are tracked by DVC, but not yet synchronized with remote storage. In addition, it is pre-configured for the `<repo-policy>`, which can take the values of `plain` for an unencrypted or `encfs` for an EncFS-managed repository. This is stored in `.dvc_policies/repo/dvc_root.yaml`. In case you choose to use encryption, as a next step follow the [EncFS initialization instructions](async_encfs_dvc/encfs_scripts/README.md) to obtain a configuration file under the directory `encrypt`. As a last item, `dvc_init_repo` places a set of default stage policies are available under `.dvc_policies/stages` that can be continuously adapted and extended as the project evolves.
+You will now have an empty directory, whose contents are tracked by DVC, but not yet synchronized with remote storage. In addition, it is pre-configured for the `<repo-policy>`, which can take the values of `plain` for an unencrypted or `encfs` for an EncFS-managed repository. This is stored in `.dvc_policies/repo/dvc_root.yaml`. In case you choose to use encryption, as a next step follow the [EncFS initialization instructions](async_encfs_dvc/encfs_int/README.md) to obtain a configuration file under the directory `encrypt`. As a last item, `dvc_init_repo` places a set of default stage policies are available under `.dvc_policies/stages` that can be continuously adapted and extended as the project evolves.
 
 Now, go to https://castor.cscs.ch and create an object storage container on under the appropriate project account to mirror the contents of the `examples/data/v0` directory (e.g. use `<git-repo-name-examples-data-v0>`). Then, back to the command line, configure your Castor as a DVC remote with 
 ```shell
@@ -81,7 +81,7 @@ Further configuration options can be obtained either from [this discussion](http
 
 ## Step 4: Restoring the DVC repo on a different machine
 
-You can now commit the above DVC environment to Git in order to regenerate it on a different machine. This includes the DVC configuration shown above, but also the `async_encfs_dvc` DVC policies and - if using encryption - also the EncFS configuration file inside `encrypt` created during [EncFS initialization](async_encfs_dvc/encfs_scripts/README.md).
+You can now commit the above DVC environment to Git in order to regenerate it on a different machine. This includes the DVC configuration shown above, but also the `async_encfs_dvc` DVC policies and - if using encryption - also the EncFS configuration file inside `encrypt` created during [EncFS initialization](async_encfs_dvc/encfs_int/README.md).
 
 ```shell
 git add .dvc/config .dvc_policies encrypt/.encfs6.xml

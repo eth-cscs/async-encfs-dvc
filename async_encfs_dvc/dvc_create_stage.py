@@ -518,7 +518,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
         #   dvc repro --no-commit <stage-name>
         # to execute this stage. Checks all data dependencies to be ready beforehand and will
         # not submit if SLURM stage job already running/about to be committed.
-        container_command = f"{os.path.join(dvc_utils_rel_to_dvc_dir, 'slurm_scripts/slurm_enqueue.sh')} " \
+        container_command = f"{os.path.join(dvc_utils_rel_to_dvc_dir, 'slurm_int/slurm_enqueue.sh')} " \
                             f"{stage_name} {os.path.basename(args.app_yaml)} {args.stage} {container_command}"
     else:
         if 'mpi_opts' in full_app_yaml['app']['stages'][args.stage]:

@@ -4,7 +4,7 @@ This project applies infrastructure-as-code principles to [DVC](https://dvc.org)
 
 The **key features** extending DVC include
 * SLURM integration for HPC clusters: DVC stages and their dependencies can be executed asynchronously using SLURM (`dvc repro` submits a SLURM job, `dvc commit` is run upon job completion)
-* privacy-preservation: DVC stages can utilize a transparently encrypted filesystem with [EncFS](https://github.com/vgough/encfs) ensuring no unencrypted data is persisted to storage or exchanged through DVC (see [further details](async_encfs_dvc/encfs_scripts/README.md))
+* privacy-preservation: DVC stages can utilize a transparently encrypted filesystem with [EncFS](https://github.com/vgough/encfs) ensuring no unencrypted data is persisted to storage or exchanged through DVC (see [further details](async_encfs_dvc/encfs_int/README.md))
 * container support: DVC stages can be run with the Docker and [Sarus](https://github.com/eth-cscs/sarus) engines such that code dependencies are tracked via Git-SHA-tagged container images, making stages fully re-executable
 * infrastructure-as-code practice: DVC repository and stage structure can be encoded into reusable YAML policies, enabling different users to generate DVC stages that comply to the same workflow organization
 
@@ -18,7 +18,7 @@ The package can be installed in your Python environment with
 ```
 pip install git+https://github.com/eth-cscs/async-encfs-dvc.git
 ```
-This will install all dependencies except for EncFS. If encryption is required, follow the separate [installation instructions](async_encfs_dvc/encfs_scripts/README.md).
+This will install all dependencies except for EncFS. If encryption is required, follow the separate [installation instructions](async_encfs_dvc/encfs_int/README.md).
 
 # Usage
 
@@ -133,7 +133,7 @@ To describe the DVC repository structure and stage policies, the application def
 
 To generate a DVC stage, `dvc_create_stage` in a first step processes the `include`s required by `--stage` (discarding all other entries `app > stages`). Secondly, all YAML anchors are resolved and the Jinja2 template variables substituted and the resulting full stage definition is written to a file that will be moved to the stage's `dvc.yaml` directory. The values for the Jinja2 variables can be set via the commandline (replace `_` by `-` for this purpose and use `--show-opts` for commandline completion suggestions). The Jinja2 template variables are the primary customization point for DVC stages generated with `dvc_create_stage`.
 
-From the resulting full stage definition, `dvc_create_stage` then creates the actual DVC stage using `dvc stage add ...` (this can be performed on its own when the full stage definition is already available). Once the DVC stage is generated, it can be run using the familiar `dvc repro .../dvc.yaml` or `dvc repro --no-commit .../dvc.yaml` with SLURM. When using `EncFS`, make sure the `ENCFS_PW_FILE` and possibly also `ENCFS_INSTALL_DIR` are set in the environment (for details, consult the guide at [async_encfs_dvc/encfs_scripts/README.md](async_encfs_dvc/encfs_scripts/README.md)).
+From the resulting full stage definition, `dvc_create_stage` then creates the actual DVC stage using `dvc stage add ...` (this can be performed on its own when the full stage definition is already available). Once the DVC stage is generated, it can be run using the familiar `dvc repro .../dvc.yaml` or `dvc repro --no-commit .../dvc.yaml` with SLURM. When using `EncFS`, make sure the `ENCFS_PW_FILE` and possibly also `ENCFS_INSTALL_DIR` are set in the environment (for details, consult the guide at [async_encfs_dvc/encfs_int/README.md](async_encfs_dvc/encfs_int/README.md)).
 
 The generated DVC stage will then automatically respect the prescribed stage policy and repo structure. In the case of the examples it takes the following layout (without encryption)
 
@@ -172,7 +172,7 @@ $ tree
 
 The datasets in `in/<datasetX>_<version>/original` are usually `dvc add`-ed (e.g. at the level of the `<version>` folder) if they are not the result of a DVC stage and every change to such a dataset requires a `dvc commit` (as when updating stage outputs).
 
-For an `EncFS`-managed repository (cf. [README.md](async_encfs_dvc/encfs_scripts/README.md)), stage data will be split into an `EncFS`-encrypted directory `encrypt` and an unencrypted directory `config` for DVC stage files and non-private meta-information. The repo structure below `encrypt` and `config` is identical.
+For an `EncFS`-managed repository (cf. [README.md](async_encfs_dvc/encfs_int/README.md)), stage data will be split into an `EncFS`-encrypted directory `encrypt` and an unencrypted directory `config` for DVC stage files and non-private meta-information. The repo structure below `encrypt` and `config` is identical.
 
 The repo and stage policies in [async_encfs_dvc/dvc_policies](async_encfs_dvc/dvc_policies) represent a starting point when initializing a repository that is to be extended/customized and evolved over time in a project.
 
@@ -188,7 +188,7 @@ where `<repo-hash>` is `$(echo -n $(realpath $(dvc root)) | sha1sum | head -c 12
 
 DVC dependencies are respected by mapping them to SLURM dependencies of the application jobs. A potential conflict for the `$(dvc root)/.dvc/tmp/rwlock` that is acquired by many `dvc` commands (such as `repro`, `commit` and `push`) that fail if they cannot acquire it is in parts avoided by naming all `dvc commit` and `dvc push` SLURM jobs as `dvc_op_<repo-hash>` and only allowing a single of these to be running per DVC repo (implemented in SLURM using the `--dependency singleton` option of `sbatch`). 
 
-When submitting DVC SLURM stages with `dvc repro` (which also acquires this lock), it is the responsibility of the user that no `dvc commit` or `dvc push` jobs on the same DVC repo are running concurrently in the background. As a first measure, it is recommended to have only a single user actively running jobs on a DVC repo. To display the status of `dvc` jobs, one can use the [`slurm_jobs.sh`](async_encfs_dvc/slurm_scripts/slurm_jobs.sh) utility with `show <job-type>` where `<job-type>` can be `stage`, ` commit` or `push`. Furthermore, by default all jobs are submitted in `--hold` state to the SLURM queue, so that the user has time to run more DVC commands and can unblock the jobs when done with DVC using `scontrol release <jobid>` or in bulk [`slurm_jobs.sh`](async_encfs_dvc/slurm_scripts/slurm_jobs.sh) `release <job-type>`. In case another `dvc repro` (or another locking command such as `dvc status`) needs to be run, one can put a repo's `stage`, `commit` and `push` jobs on hold/requeue them with the `hold` command of `slurm_jobs.sh` (and `release` them again when done). Alternatively and less safely, the `sbatch` jobs can be submitted without the `--hold` option by setting `DVC_SLURM_DVC_OP_NO_HOLD=YES` in the `dvc repro` environment, e.g. when using the above `salloc`-command for a short-lived controller node. 
+When submitting DVC SLURM stages with `dvc repro` (which also acquires this lock), it is the responsibility of the user that no `dvc commit` or `dvc push` jobs on the same DVC repo are running concurrently in the background. As a first measure, it is recommended to have only a single user actively running jobs on a DVC repo. To display the status of `dvc` jobs, one can use the [`slurm_jobs.sh`](async_encfs_dvc/slurm_int/slurm_jobs.sh) utility with `show <job-type>` where `<job-type>` can be `stage`, ` commit` or `push`. Furthermore, by default all jobs are submitted in `--hold` state to the SLURM queue, so that the user has time to run more DVC commands and can unblock the jobs when done with DVC using `scontrol release <jobid>` or in bulk [`slurm_jobs.sh`](async_encfs_dvc/slurm_int/slurm_jobs.sh) `release <job-type>`. In case another `dvc repro` (or another locking command such as `dvc status`) needs to be run, one can put a repo's `stage`, `commit` and `push` jobs on hold/requeue them with the `hold` command of `slurm_jobs.sh` (and `release` them again when done). Alternatively and less safely, the `sbatch` jobs can be submitted without the `--hold` option by setting `DVC_SLURM_DVC_OP_NO_HOLD=YES` in the `dvc repro` environment, e.g. when using the above `salloc`-command for a short-lived controller node. 
 
 In the `dvc repro` environment, generating the `dvc push` job that runs upon completion of `dvc commit` can be enabled by setting `DVC_SLURM_PUSH_ON_COMMIT=YES`. Otherwise a script is generated in the `dvc.yaml` folder that allows to submit a corresponding SLURM `dvc push` job later respecting DVC dependencies.
 

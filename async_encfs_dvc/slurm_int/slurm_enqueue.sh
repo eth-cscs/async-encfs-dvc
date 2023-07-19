@@ -72,7 +72,7 @@ if [[ "$*" =~ encfs_mount_and_run_v2.sh ]]; then
     elif [ ! -f ${ENCFS_PW_FILE} ]; then
         log_error "Error: File at path ENCFS_PW_FILE does not exist."
     fi
-    if [[ ! -x "$(command -v encfs)" && ! -x "$(dirname "$0")../encfs_scripts/encfs/install/bin/encfs" && ! -x /apps/daint/UES/anfink/encfs/bin/encfs ]]; then
+    if [[ ! -x "$(command -v encfs)" && ! -x "$(dirname "$0")../encfs_int/encfs/install/bin/encfs" && ! -x /apps/daint/UES/anfink/encfs/bin/encfs ]]; then
         if [ -z ${ENCFS_INSTALL_DIR+x} ]; then
             log_error "Error: Env variable ENCFS_INSTALL_DIR not set."
         elif [ ! -d "${ENCFS_INSTALL_DIR}" ]; then

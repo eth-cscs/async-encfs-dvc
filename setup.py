@@ -26,8 +26,8 @@ setup(
     include_package_data=True,
     scripts=[
         'async_encfs_dvc/dvc_init_repo',
-        'async_encfs_dvc/encfs_scripts/encfs_launch',
-        'async_encfs_dvc/encfs_scripts/encfs_mount_and_run_v2.sh',
+        'async_encfs_dvc/encfs_int/encfs_launch',
+        'async_encfs_dvc/encfs_int/encfs_mount_and_run_v2.sh',
     ],
     entry_points = {
         'console_scripts': ['dvc_create_stage=async_encfs_dvc.dvc_create_stage:main']

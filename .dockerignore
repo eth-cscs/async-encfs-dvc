@@ -1,4 +1,6 @@
-async_encfs_dvc/encfs_scripts/encfs
+async_encfs_dvc/encfs_int/encfs
+build
+dist
 examples/data
 examples/data_benchmark
 .tox

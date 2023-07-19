@@ -29,7 +29,7 @@ shift 2
 
 
 if [[ ${in_repo} == NO ]]; then
-  source "$(dvc root)"/../dvc_tools/slurm_scripts/dvc_out_of_repo.sh
+  source "$(dvc root)"/../dvc_tools/slurm_int/dvc_out_of_repo.sh
   stage_dir=$(realpath --relative-to=$(dvc root) .)
   repo_dir=$(realpath --relative-to=$(dvc root)/.. $(dvc root))
 

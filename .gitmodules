@@ -1,6 +1,6 @@
-[submodule "openstack"]
-	path = async_encfs_dvc/openstack
-	url = git@github.com:eth-cscs/openstack.git
-[submodule "data/dvc_tools/encfs_scripts/encfs"]
-	path = async_encfs_dvc/encfs_scripts/encfs
+[submodule "async_encfs_dvc/encfs_int/encfs"]
+	path = async_encfs_dvc/encfs_int/encfs
 	url = https://github.com/eth-cscs/encfs.git
+[submodule "async_encfs_dvc/openstack"]
+	path = async_encfs_dvc/openstack
+	url = https://github.com/eth-cscs/openstack.git
