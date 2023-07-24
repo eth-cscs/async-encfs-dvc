@@ -13,7 +13,7 @@ etl_stage:
 
   output:  # output data
     etl:
-      stage_data: &output_etl [in, *etl_input_data, *app_name, *stage_name, "{{run_label}}/output"]
+      stage_data: &output_etl [in, *etl_input_data, *app_name, *stage_name, "{{run_label}}", output]
       command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
         --etl-output: *output_etl
 

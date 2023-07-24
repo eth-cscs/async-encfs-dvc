@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Usage e.g. ./encfs_mount_and_run_v2.sh <encrypt-dir> <decrypt-dir> <log-file> <program-to-run> <arg-1> <arg-2> ...
+# Usage e.g. ./encfs_mount_and_run <encrypt-dir> <decrypt-dir> <log-file> <program-to-run> <arg-1> <arg-2> ...
 # The <log-file> can contain the pattern {MPI_RANK} that is replaced at runtime
 
 set -epm
@@ -18,7 +18,7 @@ log_error () {
     exit 1
 }
 
-[[ "$VERBOSE" == "YES" ]] && set -x
+[[ "${ENCFS_VERBOSE}" == "YES" ]] && set -x
 
 # This script is executed on each rank and starts after mounting in /tmp/encfs_$(id -u) a process
 # Once the process exits, the directory is unmounted again
@@ -50,6 +50,8 @@ MOUNT_DIR="$(realpath "$2")"
 LOG_FILE="$3"
 shift 3
 
+encfs_int_path="$(python -c 'import async_encfs_dvc; print(async_encfs_dvc.__path__[0])')/encfs_int"
+
 # Node-local synchronization file (mount-/unmount-barrier)
 ENCFS_LOCAL_SYNC_FILE="${ENCFS_ROOT}/.$(basename "${MOUNT_DIR}")_$(hostname)_local_sync"
 if [ -f ${ENCFS_LOCAL_SYNC_FILE} ]; then
@@ -62,13 +64,13 @@ PASSWORD="${ENCFS_PW}"
 if [ -z "${PASSWORD}" ]; then
     log_error "Error: EncFS-password not set - exiting."
 fi
-[[ "$VERBOSE" == "YES" ]] && set -x
+[[ "${ENCFS_VERBOSE}" == "YES" ]] && set -x
 
 # mount on each node, but only on local rank 0 (each physical node has one local rank 0)
 if [ -n "${SLURM_LOCALID}" ]; then
     MPI_RANK=${SLURM_PROCID}
     MPI_LOCAL_RANK=${SLURM_LOCALID}
-    MPI_LOCAL_SIZE="$($(dirname "$0")/slurm_step_get_local_ntasks.py)"
+    MPI_LOCAL_SIZE="$(${encfs_int_path}/slurm_step_get_local_ntasks.py)"
 elif [ -n "${OMPI_COMM_WORLD_LOCAL_RANK}" ]; then
     MPI_RANK=${OMPI_COMM_WORLD_RANK}
     MPI_LOCAL_RANK=${OMPI_COMM_WORLD_LOCAL_RANK}

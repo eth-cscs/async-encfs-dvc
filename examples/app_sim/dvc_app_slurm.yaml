@@ -17,17 +17,22 @@ app:
         name: &simulation_input_app_name in/sim_dataset_v1/app_prep_v1
         stage: &simulation_input_app_stage auto
       # use the following to run with MPI
-#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_exec: ...
 #      mpi_opts:
-#        -np: 2
+#        ...
       # use the following to run with SLURM
       slurm_opts:
+        # environment configuration in sbatch script before srun (only stage supported)
+        # e.g. on Piz Daint load sarus module here
+        stage_env: |
+          module load sarus
+        # sbatch options
         stage:
           --nodes: 8
           --ntasks: 16
           --cpus-per-task: 12
           --constraint: gpu
-          --time: '01:00:00'
+          --time: '00:05:00'
         dvc:
           --cpus-per-task: 24
           --constraint: mc
@@ -47,17 +52,22 @@ app:
         name: &simulation_input_app_name app_sim_v1/sim_dataset_v1
         stage: &simulation_input_app_stage simulation
       # use the following to run with MPI
-#      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+#      mpi_exec: ...
 #      mpi_opts:
-#        -np: 2
+#        ...
       # use the following to run with SLURM
       slurm_opts:
+        # environment configuration in sbatch script before srun (only stage supported)
+        # e.g. on Piz Daint load sarus module here
+        stage_env: |
+          module load sarus
+        # sbatch options
         stage:
           --nodes: 8
           --ntasks: 16
           --cpus-per-task: 12
           --constraint: gpu
-          --time: '01:00:00'
+          --time: '00:05:00'
         dvc:
           --cpus-per-task: 24
           --constraint: mc

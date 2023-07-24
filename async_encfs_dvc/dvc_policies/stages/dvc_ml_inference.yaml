@@ -4,23 +4,23 @@
 ml_inference_stage:  # stage_data is relative to mount data point
   input:  # input data dependencies
     training:  # trained model
-      stage_data: &input_trained_model [*app_name, training, "{{input_training}}/output"]
+      stage_data: &input_trained_model [*app_name, training, "{{input_training}}", output]
       command_line_options:  # for script
         --training-output: [*input_trained_model, "{{input_training_file or ''}}"]
 
     inference:  # inference sample/batch
-      stage_data: &input_inference [*inference_input_app_name, *inference_input_app_stage, "{{input_inference}}/output"]
+      stage_data: &input_inference [*inference_input_app_name, *inference_input_app_stage, "{{input_inference}}", output]
       command_line_options:
         --inference-input: [ *input_inference, "{{input_inference_file or ''}}" ]
 
     config:  # hyperparameter config
-      stage_data: &input_config [*app_name, config, "{{input_config}}"]
+      stage_data: &input_config [*app_name, config, "{{input_config}}", output]
       command_line_options:
         --config: [*input_config, "{{input_config_file or ''}}"]
 
   output:  # inference output
     inference:
-      stage_data: &output_inference [*app_name, inference, "{{run_label}}/output"]
+      stage_data: &output_inference [*app_name, inference, "{{run_label}}", output]
       command_line_options:
         --inference-output: *output_inference
 

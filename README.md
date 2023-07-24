@@ -22,20 +22,21 @@ This will install all dependencies except for EncFS. If encryption is required, 
 
 # Usage
 
-A set of notebooks illustrating the usage of individual features is avaialble in the [examples](examples) directory.
+A set of notebooks illustrating the usage of individual features is available in the [examples](examples) directory.
 
-* a demonstration of DVC stage generation with infrastructure-as-code principles for a machine learning pipeline is available under the [ML repository tutorial](examples/ml_tutorial.ipynb).
-* a tutorial on an iterative simulation workflow with Docker containers on encrypted data can be found under the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb). This workflow is also available as a [performance benchmark](benchmarks) (see [results](#performance-on-piz-daint-and-castor) below)
-* an example of running a DVC workflow with SLURM and Sarus containers is available under the [SLURM tutorial](examples/slurm_sim_tutorial.ipynb).
+* a demonstration of DVC stage generation with infrastructure-as-code principles for a machine learning pipeline is available in the [ML repository tutorial](examples/ml_tutorial.ipynb).
+* an iterative simulation workflow running with Docker containers on encrypted data can be found in the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb). This workflow is also used as a [performance benchmark](benchmarks) (see [results](#performance-on-piz-daint-and-castor) below)
+* a DVC workflow with asynchronous stages in SLURM and Sarus containers is available in the [SLURM tutorial](examples/slurm_async_sim_tutorial.ipynb)
+* finally, the [vision transformer notebook](examples/vit_example.ipynb) integrates the above concepts to run a PyTorch deep learning application with SLURM on encrypted data
 
 For a step-by-step guide on setting up a DVC repository to track workflow results, (optionally) using encryption and [Castor](https://castor.cscs.ch)'s object storage as a remote, please refer to the [setup guide](setup_guide.md).
 
-The project also includes a test suite that can be run with `tox`. If EncFS is not installed locally, use `tox -e py38-default` to only run non-EncFS tests. In contrast, to run only EncFS-tests, execute `tox -e py38-encfs`.
+The project also includes a test suite that can be run with `tox`. If EncFS and SLURM are not installed locally, use `tox -e py39-default` to only run tests that do not have these requirements. In contrast, to run only EncFS-tests, use `tox -e py39-encfs` and to run only the SLURM-tests use `tox -e py39-slurm`. 
 
 
 # Performance on Piz Daint and Castor
 
-We use the `iterative_sim` benchmark [without encryption](benchmarks/iterative_sim_plain_benchmark.sh) and [with](benchmarks/iterative_sim_encfs_benchmark.sh) `EncFS` as illustrated in the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb) on Piz Daint and [Castor](https://castor.cscs.ch). The `iterative_sim` benchmark creates and runs a pipeline of DVC stages that form a linear dependency graph. In contrast to the `iterative_sim`-based tutorial that focuses on a single node with `Docker`, here every `app_sim` stage is run with `Sarus` on 8 GPU nodes and 16 ranks. Each rank writes its payload sampled from `/dev/urandom` with `dd` to the filesystem using a single thread. The aggregate output payload per DVC stage is increased in powers of 2, from 16 GB to 1.024 TB in our runs (using decimal units, i.e. 1 GB = 10^9 B). The subsequent `dvc commit` and `dvc push` commands are run on a single multi-core node. The software configuration used is available at [iterative_sim.config.md](benchmarks/results/iterative_sim.config.md) and detailed logs can be found in the `benchmarks` branch.
+We use the `iterative_sim` [benchmark](benchmarks/iterative_sim_benchmark.sh) with and without encryption as illustrated in the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb) on Piz Daint and [Castor](https://castor.cscs.ch). This benchmark creates and runs a pipeline of DVC stages that form a linear dependency graph. In contrast to the corresponding based tutorial that focuses on a single node with `Docker`, here every `app_sim` stage is run with `Sarus` on 8 GPU nodes and 16 ranks. Each rank writes its payload sampled from `/dev/urandom` with `dd` to the filesystem using a single thread. The aggregate output payload per DVC stage is increased in powers of 2, from 16 GB to 1.024 TB in our runs (using decimal units, i.e. 1 GB = 10^9 B). The subsequent `dvc commit` and `dvc push` commands are run on a single multi-core node. The software configuration used is available at [iterative_sim.config.md](benchmarks/results/iterative_sim.config.md) and detailed logs can be found in the `benchmarks` branch.
 
 We use three different configurations for 
 * **large files**: 1 file per rank, i.e. starting with 1 GB

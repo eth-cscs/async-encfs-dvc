@@ -1,14 +1,16 @@
-# app_prep version 1 description for DVC stage generation
+# input policy for DVC stage generation
 
 app:
   name: &app_name in_original
-  container_engine: none
 
   stages:
     # this is a drop-in replacement for dvc add when using EncFS
-    # (creates a frozen DVC stage, when completed update output with 'dvc commit <stage-name>)
+    # (creates a frozen DVC stage, when completed update output with 'dvc commit <stage-name>')
     add:
       type: in_stage
+      output_add:
+        dataset: &output_dataset_name "{{ dataset_name }}"
+        subset: &output_subset_name "{{ subset_name }}"
       frozen: True
       script: "true"
 

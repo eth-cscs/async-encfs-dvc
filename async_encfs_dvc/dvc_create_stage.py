@@ -271,7 +271,8 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, stage, default_
     # app options (user-defined, e.g. for SLURM param substitution using
     # --<stage-type>-slurm-num-nodes/--<stage-type>-slurm-num-tasks)
     for app_arg, occurrences in app_args.items():
-        if app_arg not in ['app_yaml', 'stage', 'run_label']:
+        # avoid duplicate declaration for args that were imported to stage definition with YAML anchors
+        if app_arg not in ['app_yaml', 'stage', 'run_label'] and app_arg not in stage_args: 
             if f"--{app_arg.replace('_','-')}" in sys.argv:
                 occ_joined_paths = [os.path.join(*[os.path.join(*el) if isinstance(el, list) else el
                                                    for el in occ['value']])
@@ -407,8 +408,8 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     # Accumulate dvc stage add command, starting with host (-> encfs) -> container (runtime) mount mappings
     mounts = dict()
     for mount_name, mount_config in full_app_yaml['host_data']['mount'].items():
-        if 'container_engine' in full_app_yaml['app'] and full_app_yaml['app']['container_engine'] != 'none':
-            assert mount_name in full_app_yaml['container_data']['mount']
+        # TODO: integrate this with encfs_int.mount_config
+
         if mount_config['type'] == 'plain':
             mounts[mount_name] = {'origin': mount_config['origin'],
                                   'host': mount_config['origin']}
@@ -433,6 +434,12 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
                                   'host': encfs_mounted_dir}
         else:
             raise RuntimeError(f"Unsupported mount config {mount_name} of type {mount_config['type']}.")
+
+    for mount_name in mounts:
+        # Container mount target required for container engines
+        if 'container_engine' in full_app_yaml['app'] and full_app_yaml['app']['container_engine'] != 'none':
+            assert mount_name in full_app_yaml['container_data']['mount']
+
         # Could rename mounts[mount_name]['container'] -> mounts[mount_name]['runtime']
         if 'container_engine' not in full_app_yaml['app'] or full_app_yaml['app']['container_engine'] == 'none':
             if os.path.isabs(mounts[mount_name]['host']):
@@ -476,7 +483,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
             render_cli_opts(container_engine_opts) + \
             f" --entrypoint bash {full_app_yaml['app']['image']} -c"
     elif full_app_yaml['app']['container_engine'] == 'sarus':
-        # Andreas' SARUS_ARGS=env skipped (env could be set in extra wrapping script, cf. encfs_mount_and_run_v2.sh)
+        # Andreas' SARUS_ARGS=env skipped (env could be set in extra wrapping script, cf. encfs_mount_and_run)
         container_engine_opts = full_app_yaml['app'].get('container_opts', {})
         container_command = 'sarus run ' + \
             ' '.join([f"--mount=type=bind,source={mount_cmd(v['host'], is_host=True)},"
@@ -486,8 +493,6 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
             f" --entrypoint bash {full_app_yaml['app']['image']} -c"
     else:
         raise RuntimeError(f"Unsupported container engine {full_app_yaml['app']['container_engine']}")
-
-    dvc_utils_rel_to_dvc_dir = os.path.relpath(sys.path[0], os.path.join(host_dvc_root, dvc_dir))
 
     # encfs-command
     using_encfs = full_app_yaml['host_data']['mount']['data']['type'] == 'encfs'
@@ -501,9 +506,9 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
         encfs_log_file = os.path.relpath(
             os.path.join(stage_data_deps['output'][0]['host_mounted_stage_data'], "encfs_out_{MPI_RANK}.log"), dvc_dir)
 
-        # Could also use dvc_root_encfs.yaml directly as arg to encfs_mount_and_run_v2.sh (cf. launch.sh)
-        encfs_command = f"encfs_mount_and_run_v2.sh " \
-                        f"{encfs_root_dir} {encfs_mounted_dir} {encfs_log_file}"
+        # Could also use dvc_root_encfs.yaml directly as arg to encfs_mount_and_run (cf. encfs_launch)
+        encfs_command = f"encfs_mount_and_run " + " ".join([os.path.normpath(p) for p in
+                                                            [encfs_root_dir, encfs_mounted_dir, encfs_log_file]])
 
         # Wrap container command into encfs-mount
         container_command = f"{encfs_command} {container_command}"
@@ -518,7 +523,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
         #   dvc repro --no-commit <stage-name>
         # to execute this stage. Checks all data dependencies to be ready beforehand and will
         # not submit if SLURM stage job already running/about to be committed.
-        container_command = f"{os.path.join(dvc_utils_rel_to_dvc_dir, 'slurm_int/slurm_enqueue.sh')} " \
+        container_command = f"slurm_enqueue.sh " \
                             f"{stage_name} {os.path.basename(args.app_yaml)} {args.stage} {container_command}"
     else:
         if 'mpi_opts' in full_app_yaml['app']['stages'][args.stage]:
@@ -533,9 +538,9 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     os.chdir(dvc_dir)
 
     # script commandline options
-    def get_expanded_options(opts, sep=" "):
+    def get_expanded_options(opts, expand_paths, sep=" "):
         """Flatten values of YAML options dict and return as string"""
-        expanded_options = [(opt, get_expanded_path(vals)) for (opt, vals) in opts.items()]
+        expanded_options = [(opt, get_expanded_path(vals) if expand_paths else vals) for (opt, vals) in opts.items()]
         return " ".join(f"{opt}{sep}{val}" for opt, val in expanded_options)
 
     stage_command_line_options = dict()
@@ -544,10 +549,10 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
             stage_command_line_options.update(el['command_line_options'])
 
     # Do not compose extra_command_line_options with dvc_root as should be code deps, etc. (data deps caught in stages)
-    command_line_options = get_expanded_options(stage_command_line_options)
+    command_line_options = get_expanded_options(stage_command_line_options, expand_paths=True)
     extra_command_line_options = full_app_yaml['app']['stages'][args.stage].get('extra_command_line_options', None)
     if extra_command_line_options is not None:
-        command_line_options += " " + get_expanded_options(extra_command_line_options)
+        command_line_options += " " + get_expanded_options(extra_command_line_options, expand_paths=False)
 
     commit_sha = run_shell_cmd("git rev-parse HEAD")
     git_root = run_shell_cmd("git rev-parse --show-toplevel")
@@ -556,6 +561,18 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
                                   for data_dep in stage_data_deps['input']]
     host_stage_rel_output_deps = [os.path.relpath(data_dep['host_stage_data'], dvc_dir)
                                   for data_dep in stage_data_deps['output']]
+
+    # deduplicate DVC paths (may occur due to logically separate dependencies tracked in same path)
+    def deduplicate_paths(paths):
+        unique_paths = []
+        for p in paths:
+            if p not in unique_paths:
+                unique_paths.append(p)
+        return unique_paths
+
+
+    host_stage_rel_input_deps = deduplicate_paths(host_stage_rel_input_deps)
+    host_stage_rel_output_deps = deduplicate_paths(host_stage_rel_output_deps)
 
     if using_encfs:
         host_stage_rel_output_deps.append('output')  # unencrypted log files with encfs

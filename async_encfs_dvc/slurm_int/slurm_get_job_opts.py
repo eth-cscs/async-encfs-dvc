@@ -8,7 +8,7 @@ import yaml
 assert len(sys.argv) == 4
 dvc_app_yaml_filename = sys.argv[1]
 stage_type = sys.argv[2]
-slurm_job_type = sys.argv[3][2:]
+slurm_job_type = sys.argv[3]
 assert slurm_job_type in ['stage', 'dvc']  # get either stage or dvc SLURM options
 
 with open(dvc_app_yaml_filename) as f:

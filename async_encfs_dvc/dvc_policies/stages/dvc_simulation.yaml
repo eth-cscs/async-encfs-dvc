@@ -4,13 +4,13 @@
 simulation_stage:
   input:  # input data dependencies
     simulation:  # stage_data is relative to mount data point
-      stage_data: &input_simulation_data [*simulation_input_app_name, *simulation_input_app_stage, "{{input_simulation}}/output"]
+      stage_data: &input_simulation_data [*simulation_input_app_name, *simulation_input_app_stage, "{{input_simulation}}", output]
       command_line_options:  # for script
         --simulation-input: [*input_simulation_data, "{{input_simulation_file or ''}}"]
 
   output:  # output data
     simulation:
-      stage_data: &output_simulation [*app_name, simulation, "{{run_label}}/output"]
+      stage_data: &output_simulation [*app_name, simulation, "{{run_label}}", output]
       command_line_options:
         --simulation-output: *output_simulation
 

@@ -22,18 +22,7 @@ app:
         -np: 2
       # use the following to run with SLURM
       # slurm_opts:
-      #   stage:
-      #     --nodes: 8
-      #     --ntasks: 16
-      #     --cpus-per-task: 12
-      #     --constraint: gpu
-      #     --time: '01:00:00'
-      #   dvc:
-      #     --cpus-per-task: 24
-      #     --constraint: mc
-      #     --time: '12:00:00'
-      #   all:
-      #     --account: csstaff
+      #   ...
       script: [*code_root, simulation.sh]
       # for script simulation.sh
       # (note that these options are not processed w.r.t. dvc_root_host)
@@ -52,18 +41,7 @@ app:
         -np: 2
       # use the following to run with SLURM
       # slurm_opts:
-      #   stage:
-      #     --nodes: 8
-      #     --ntasks: 16
-      #     --cpus-per-task: 12
-      #     --constraint: gpu
-      #     --time: '01:00:00'
-      #   dvc:
-      #     --cpus-per-task: 24
-      #     --constraint: mc
-      #     --time: '12:00:00'
-      #   all:
-      #     --account: csstaff
+      #   ...
       script: [*code_root, simulation.sh]
       # for script simulation.sh
       # (note that these options are not processed w.r.t. dvc_root_host)

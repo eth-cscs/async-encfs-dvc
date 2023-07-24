@@ -1,0 +1,37 @@
+# input policy for DVC stage generation
+
+app:
+  name: &app_name in_original
+  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/ex_in"
+
+  stages:
+    fetch_cifar10:
+      type: in_stage
+      output_fetch_cifar10:
+        dataset: &output_dataset_name cifar10
+        subset: &output_subset_name '.'
+      # run with SLURM
+      slurm_opts:
+        # environment configuration in sbatch script before srun (only stage supported)
+        stage_env: |
+          module load daint-gpu
+          module load PyTorch
+        # sbatch options
+        stage:
+          --nodes: 1
+          --ntasks: 1
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '4:00:00'
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: '4:00:00'
+        all:
+          --account: csstaff
+      script: [*code_root, fetch_cifar10.py]
+
+
+include:
+  dvc_root: ".dvc_policies/repo/dvc_root.yaml"
+  in_stage: ".dvc_policies/stages/dvc_in.yaml"

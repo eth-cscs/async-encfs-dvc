@@ -22,6 +22,11 @@ app:
         -np: 1
       # use the following to run with SLURM
 #      slurm_opts:
+#        # environment configuration in sbatch script before srun (only stage supported)
+#        # e.g. on Piz Daint load sarus module here
+#        stage_env: |
+#          module load sarus
+#        # sbatch options
 #        stage:
 #          --nodes: 1
 #          --ntasks: 1
@@ -53,6 +58,11 @@ app:
         -np: 2
       # use the following to run with SLURM
 #      slurm_opts:
+#        # environment configuration in sbatch script before srun (only stage supported)
+#        # e.g. on Piz Daint load sarus module here
+#        stage_env: |
+#          module load sarus
+#        # sbatch options
 #        stage:
 #          --nodes: 2
 #          --ntasks: 4

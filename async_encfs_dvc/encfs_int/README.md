@@ -141,7 +141,7 @@ later using encfsctl.
 New Encfs Password: 
 Verify Encfs Password:
 ```
-The configuration will be stored in a file `encrypt/.encfs6.xmli` and should look similar to 
+The configuration will be stored in a file `encrypt/.encfs6.xml` and should look similar to 
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -195,10 +195,10 @@ On Piz Daint, the decrypted view is made available on `/tmp/encfs_$(id -u)_async
 
 # Running SLURM jobs with EncFS and DVC
 
-To run EncFS-jobs with SLURM on Piz Daint manually, you can wrap the rank-specific part of your `srun`-command in the script `encfs_mount_and_run_v2.sh` plus the EncFS-root and mount target directory. This will mount your `encrypt` directory at `<decrypt-dir>` (typically `/tmp/encfs_$(id -u)_async_encfs_dvc`) on each compute node using the EncFS-password in `${ENCFS_PW_FILE}` for the duration of the command,
+To run EncFS-jobs with SLURM on Piz Daint manually, you can wrap the rank-specific part of your `srun`-command in the script `encfs_mount_and_run` plus the EncFS-root and mount target directory. This will mount your `encrypt` directory at `<decrypt-dir>` (typically `/tmp/encfs_$(id -u)_async_encfs_dvc`) on each compute node using the EncFS-password in `${ENCFS_PW_FILE}` for the duration of the command,
 
 ```shell
-ENCFS_PW_FILE=<path-to-encfs.key> srun encfs_mount_and_run_v2.sh encrypt <decrypt-dir> <log-file> <command>
+ENCFS_PW_FILE=<path-to-encfs.key> srun encfs_mount_and_run encrypt <decrypt-dir> <log-file> <command>
 ```
 
 You can run application stages of a pipeline on sensitive data through Sarus (providing the extra `SARUS_ARGS=env` environment) and bind-mount the decrypted directory to make it available within the container, e.g. by appending the following command to the above `srun` line,

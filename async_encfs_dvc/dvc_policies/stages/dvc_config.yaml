@@ -1,13 +1,13 @@
-# An input stage for original data
+# An input stage for configuration files
 # Serves both for data fetched from external sources as well as as a workaround
 # for the missing --file option of dvc add in newer releases
 
-in_stage:
+config_stage:
   # no data dependencies
   output:  # output data
-    in:
-      stage_data: &output_in [in, *output_dataset_name, original, *output_subset_name, output]
+    config:
+      stage_data: &output_config [*app_name, config, *config_group_name, output]
       command_line_options:
-        --in-output: *output_in
+        --config-output: *output_config
 
-  dvc: [*output_in, ".."]
+  dvc: [*output_config, ".."]

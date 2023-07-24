@@ -1,0 +1,82 @@
+# PyTorch Vision Transformer description for DVC stage generation
+
+app:
+  name: &app_name ex_vit/cifar10/baseline_model  # apps should always be versioned, dataset can be absorbed into model in case of redundancy
+  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/ex_vit"  # /src/app
+
+  stages: # app-specific stages
+    config:
+      type: config_stage
+      output_config:
+        config_group: &config_group_name "{{ config_group }}"
+      frozen: True
+      script: "true"
+
+    inference:
+      type: ml_inference_stage # refers to included stage definition
+      input_inference: # parameterizes stage
+        name: &inference_input_app_name in/cifar10
+        stage: &inference_input_app_stage original
+      # run with SLURM
+      slurm_opts:
+        # environment configuration in sbatch script before srun (only stage supported)
+        stage_env: |
+          module load daint-gpu
+          module load PyTorch
+        # sbatch options
+        stage:
+          --nodes: 1
+          --ntasks: 1
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '12:00:00'
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: '4:00:00'
+        all:
+          --account: csstaff
+      script: [*code_root, inference.py]
+      extra_command_line_options:
+        --dry-run: ''
+        # --no-cuda: ''
+
+    training:
+      type: ml_training_stage
+      input_training: # parameterizes training data dep
+        name: &training_input_app_name in/cifar10
+        stage: &training_input_app_stage original
+      input_test: # parameterizes test data dep
+        name: &test_input_app_name in/cifar10
+        stage: &test_input_app_stage original
+      # run with SLURM
+      slurm_opts:
+        # environment configuration in sbatch script before srun (only stage supported)
+        stage_env: |
+          module load daint-gpu
+          module load PyTorch
+        # sbatch options
+        stage:
+          --nodes: 1
+          --ntasks: 1
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '12:00:00'
+        dvc:
+          --cpus-per-task: 24
+          --constraint: mc
+          --time: '4:00:00'
+        all:
+          --account: csstaff
+      script: [*code_root, training.py]
+      extra_command_line_options:
+        --dry-run: ''
+        # --no-cuda: ''
+
+
+# include dvc-root/mounts and stage type information (paths relative to DVC root)
+include:
+  dvc_root: '.dvc_policies/repo/dvc_root.yaml'
+  config_stage: '.dvc_policies/stages/dvc_config.yaml'
+  ml_inference_stage: '.dvc_policies/stages/dvc_ml_inference.yaml'
+  ml_training_stage: '.dvc_policies/stages/dvc_ml_training.yaml'

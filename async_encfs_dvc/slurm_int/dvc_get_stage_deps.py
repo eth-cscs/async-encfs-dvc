@@ -14,6 +14,6 @@ graph = pydot.graph_from_dot_data(dvc_dag_dot)[0]
 
 deps = []
 for edge in graph.get_edges():
-    if edge.get_source().strip('"') == sys.argv[1]:
-        deps.append(edge.get_destination().strip('"'))
+    if edge.get_destination().strip('"') == sys.argv[1]:
+        deps.append(edge.get_source().strip('"'))
 print('\n'.join(deps), end='')
