@@ -30,7 +30,7 @@ test-single-node:
   stage: test
   image: $PERSIST_IMAGE_NAME
   script:
-    - cd /async_encfs_dvc && tox -e py38-default
+    - cd /async_encfs_dvc && tox -e py310-default
   variables:
     SLURM_JOB_PARTITION: normal
     SLURM_JOB_NUM_NODES: 1
