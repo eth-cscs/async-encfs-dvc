@@ -23,6 +23,7 @@ app:
         stage_env: |
           module load daint-gpu
           module load PyTorch
+          export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
         # sbatch options
         stage:
           --nodes: 1
@@ -55,10 +56,16 @@ app:
         stage_env: |
           module load daint-gpu
           module load PyTorch
+          export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+          # Environment variables needed by the NCCL backend for distributed training
+          export NCCL_DEBUG=INFO
+          export NCCL_IB_HCA=ipogif0
+          export NCCL_IB_CUDA_SUPPORT=1
         # sbatch options
         stage:
-          --nodes: 1
-          --ntasks: 1
+          --nodes: 4
+          --ntasks: 4
           --cpus-per-task: 12
           --constraint: gpu
           --time: '12:00:00'
@@ -70,6 +77,7 @@ app:
           --account: csstaff
       script: [*code_root, training.py]
       extra_command_line_options:
+        --dist: ''
         --dry-run: ''
         # --no-cuda: ''
 

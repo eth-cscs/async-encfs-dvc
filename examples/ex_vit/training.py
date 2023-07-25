@@ -13,6 +13,12 @@ from torch import optim
 import numpy as np
 from torch.hub import tqdm
 
+from torch.utils.data.distributed import DistributedSampler
+try:
+    import horovod.torch as hvd
+except ImportError:
+    pass
+
 from model import ViT
 
 
@@ -42,12 +48,15 @@ class TrainEval:
             loss.backward()
             self.optimizer.step()
 
+            if self.args.dist:
+                loss = hvd.allreduce(loss, name='train_loss')
             total_loss += loss.item()
             tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
             if self.args.dry_run:
                 break
 
-        return total_loss / len(self.train_dataloader)
+        return total_loss / len(self.train_dataloader) / (1 if not self.args.dist else hvd.size())
+
 
     def eval_fn(self, current_epoch):
         self.model.eval()
@@ -61,12 +70,14 @@ class TrainEval:
             logits = self.model(images)
             loss = self.criterion(logits, labels)
 
+            if self.args.dist:
+                loss = hvd.allreduce(loss, name='eval_loss')
             total_loss += loss.item()
             tk.set_postfix({"Loss": "%6f" % float(total_loss / (t + 1))})
             if self.args.dry_run:
                 break
 
-        return total_loss / len(self.val_dataloader)
+        return total_loss / len(self.val_dataloader) / (1 if not self.args.dist else hvd.size())
 
     def train(self):
         best_valid_loss = np.inf
@@ -76,8 +87,9 @@ class TrainEval:
             val_loss = self.eval_fn(i)
 
             if val_loss < best_valid_loss:
-                torch.save(self.model.state_dict(),
-                           os.path.join(self.args.training_output, "best-weights.pt"))
+                if not self.args.dist or hvd.rank() == 0:
+                    torch.save(self.model.state_dict(),
+                               os.path.join(self.args.training_output, "best-weights.pt"))
                 print("Saved Best Weights")
                 best_valid_loss = val_loss
                 best_train_loss = train_loss
@@ -116,11 +128,21 @@ def main():
                         help='disables CUDA training')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='quickly check a single pass')
+    parser.add_argument('--dist', action='store_true', default=False,
+                        help='enables distributed training')
 
     args = parser.parse_args()
 
     with open(args.config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
+
+    if args.dist:
+        hvd.init()
+        if config['global_batch_size'] % hvd.size() != 0:
+            raise RuntimeError(f"Batch size ({config['global_batch_size']}) must be a multiple of number of processes ({hvd.size()}).")
+        config['batch_size'] = config['global_batch_size']//hvd.size()
+    else:
+        config['batch_size'] = config['global_batch_size']
 
     config.update(vars(args))
     config = SimpleNamespace(**config)
@@ -134,12 +156,25 @@ def main():
     ])
     train_data = torchvision.datasets.CIFAR10(root=config.training_input, train=True, download=False, transform=transforms)
     valid_data = torchvision.datasets.CIFAR10(root=config.test_input, train=False, download=False, transform=transforms)
-    train_loader = DataLoader(train_data, batch_size=config.batch_size, shuffle=True)
-    valid_loader = DataLoader(valid_data, batch_size=config.batch_size, shuffle=True)
+    if config.dist:
+        train_sampler = DistributedSampler(train_data, num_replicas=hvd.size(), rank=hvd.rank())
+        valid_sampler = DistributedSampler(valid_data, num_replicas=hvd.size(), rank=hvd.rank())
+        train_loader = DataLoader(train_data, batch_size=config.batch_size, sampler=train_sampler)
+        valid_loader = DataLoader(valid_data, batch_size=config.batch_size, sampler=valid_sampler)
+    else:
+        train_loader = DataLoader(train_data, batch_size=config.batch_size, shuffle=True)
+        valid_loader = DataLoader(valid_data, batch_size=config.batch_size, shuffle=True)
 
     model = ViT(config).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
+    if config.dist:
+        hvd.broadcast_parameters(model.state_dict(), root_rank=0)
+        hvd.broadcast_optimizer_state(optimizer, root_rank=0)
+        optimizer = hvd.DistributedOptimizer(optimizer,
+                                             named_parameters=model.named_parameters(),
+                                             op=hvd.Average)
+
     criterion = nn.CrossEntropyLoss()
 
     TrainEval(config, model, train_loader, valid_loader, optimizer, criterion, device).train()

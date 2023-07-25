@@ -62,6 +62,7 @@ def main():
     with open(args.config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
+    config['batch_size'] = config['global_batch_size']  # not performed in parallel
     config.update(vars(args))
     config = SimpleNamespace(**config)
 
