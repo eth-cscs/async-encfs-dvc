@@ -27,7 +27,7 @@ A set of notebooks illustrating the usage of individual features is available in
 * a demonstration of DVC stage generation with infrastructure-as-code principles for a machine learning pipeline is available in the [ML repository tutorial](examples/ml_tutorial.ipynb).
 * an iterative simulation workflow running with Docker containers on encrypted data can be found in the [EncFS-simulation tutorial](examples/encfs_sim_tutorial.ipynb). This workflow is also used as a [performance benchmark](benchmarks) (see [results](#performance-on-piz-daint-and-castor) below)
 * a DVC workflow with asynchronous stages in SLURM and Sarus containers is available in the [SLURM tutorial](examples/slurm_async_sim_tutorial.ipynb)
-* a PyTorch deep learning application that integrates the above concepts to run distributed training and inference for a [vision transfomer](examples/vit_example.ipynb) model with SLURM on encrypted data
+* a PyTorch deep learning application that integrates the above concepts to run distributed training and inference for a [vision transfomer](examples/vit_example.ipynb) model on encrypted data using SLURM
 
 For a step-by-step guide on setting up a DVC repository to track workflow results, (optionally) using encryption and [Castor](https://castor.cscs.ch)'s object storage as a remote, please refer to the [setup guide](setup_guide.md).
 
