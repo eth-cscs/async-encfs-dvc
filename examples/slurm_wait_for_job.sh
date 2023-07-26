@@ -8,7 +8,7 @@ fi
 # ID of job to wait for
 jobid=$1
 echo "Monitoring SLURM job ${jobid}."
-sleep 15
+sleep 30
 
 while true; do
     job_stage=$(sacct -j $jobid --format=State --noheader | head -1 | awk '{print $1}')
@@ -17,7 +17,7 @@ while true; do
     "PENDING"|"RUNNING")
         echo "The SLURM pipeline is still in process."
         dvc_scontrol show stage,commit
-        sleep 15
+        sleep 60
         ;;
     "COMPLETED")
         echo "The SLURM pipeline has successfully completed."
