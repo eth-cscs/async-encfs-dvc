@@ -131,8 +131,9 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
         app_yaml = yaml.load(app_yaml_str, Loader=yaml.FullLoader)
 
     # Previous version without YAML parsing
-    append_to_app_yaml_cmd = " && ".join(
-        [f"cat {os.path.join(dvc_root_rel_to_app_yaml, app_yaml_include)} >> {tmp_full_app_yaml_file}"
+    append_to_app_yaml_cmd = f" && ".join(
+        [f"echo \"\"  >> {tmp_full_app_yaml_file} && "
+         f"cat {os.path.join(dvc_root_rel_to_app_yaml, app_yaml_include)} >> {tmp_full_app_yaml_file}"
          for app_yaml_include in app_yaml['include'].values()])
     sp.run(append_to_app_yaml_cmd, shell=True, check=True)
 
@@ -577,10 +578,9 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     if using_encfs:
         host_stage_rel_output_deps.append('output')  # unencrypted log files with encfs
 
+    # Create output directories (necessary for no-op stages that are never executed)
     for stage_output_dep in host_stage_rel_output_deps:
         os.makedirs(stage_output_dep)
-
-    out_log_file = f"output/stage_out.log"  # can alternatively be done by appending to command
 
     print(f"Writing DVC stage to {os.path.relpath(os.getcwd(), host_dvc_root)}")
     if using_encfs:
@@ -592,8 +592,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
            f"{' '.join(['--deps {}'.format(dep) for dep in host_stage_rel_input_deps])} " 
            f"{' '.join([('--outs-persist ' if using_slurm else '--outs ') + dep for dep in host_stage_rel_output_deps])} "
            f"--desc \"Generated with {stage_create_command} at commit {commit_sha}\" "
-           f"\"if (set -o pipefail) 2>/dev/null; then set -o pipefail; fi; mkdir -p {' '.join(host_stage_rel_output_deps)} && "
-           f"{container_command} \\\"{script} {command_line_options}\\\" 2>&1 | tee {out_log_file}\" ",
+           f"\"dvc_cmd {stage_name} {container_command} \\\"{script} {command_line_options}\\\" \" ",
            shell=True, check=True)
     # mkdir host_stage_rel_output_deps only required when not using slurm (as already integrated in dvc_run_sbatch)
 

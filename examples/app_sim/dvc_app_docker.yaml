@@ -5,6 +5,7 @@ app:
   # container_engine can be none, docker or sarus (container_data only takes effect for the latter two)
   container_engine: docker
 #  container_opts:
+#    --gpus: # GPU-support for docker
 #    --mpi:  # required when using MPI inside Sarus containers
   image: load/async-encfs-dvc/app_sim  # container image to use (only takes effect if container_engine != none)
   # absolute path or "\\$(git rev-parse --show-toplevel)/..." with container_engine == none

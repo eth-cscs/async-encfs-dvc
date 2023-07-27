@@ -42,8 +42,10 @@ if [ "$2" == "encfs" ]; then
  mv .dvc_policies/repo/dvc_root{_encfs,}.yaml
 fi
 
-# Copy stage policies
+# Copy stage policies and track them with Git
 cp -r ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/stages .dvc_policies/
+
+git add .dvc_policies
 
 popd >/dev/null
 

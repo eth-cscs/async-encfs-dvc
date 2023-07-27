@@ -6,11 +6,10 @@ app:
   code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_prep"
 
   # examples for manual and automated ETL stages
-  # (the assignment of manual to train, auto to test/inf could be chosen differently)
+  # (the assignment of manual to train, auto to test/inf/sim is chosen arbitrarily)
   stages:
-    # this is a preprocessing step run manually outside of DVC
-    # (frozen DVC stage, when completed update output with 'dvc commit <stage-name>)
-    manual_train:
+    manual_train:  # preprocessing step run manually outside of DVC
+                   # (frozen DVC stage, when completed update output with 'dvc commit <stage-name>)
       type: etl_stage
       # frozen is specific to manual stage: protects outputs from being deleted/overwritten by dvc repro
       frozen: True
@@ -21,8 +20,7 @@ app:
       # script is never run (commandline params are not checked, but should be used in manual execution)
       script: "true"
 
-    # an automated (standard) DVC stage
-    auto_test:
+    auto_test:  # an automated (standard) DVC stage
       type: etl_stage
       frozen: False
       name: &stage_name auto

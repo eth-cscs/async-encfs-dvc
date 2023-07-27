@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+dvc_stage=$1
+shift
+
+if (set -o pipefail) 2>/dev/null; then
+    set -o pipefail
+fi
+
+python3 <<EOF
+import os
+import yaml
+
+dvc_stage = '${dvc_stage}'.split(':')
+
+if len(dvc_stage) == 2:
+    dvc_file, dvc_stage_name = dvc_stage
+else:
+    dvc_file = 'dvc.yaml'
+    dvc_stage_name = dvc_stage[0]
+
+if not os.path.exists(dvc_file):
+    raise FileNotFoundError(f'{dvc_file} not found in {os.getcwd()}. Provide DVC stage to run as the first argument followed by command of DVC stage as remaining parameters.')
+
+with open(dvc_file) as f:
+    dvc_yaml = yaml.load(f, Loader=yaml.FullLoader)
+
+if dvc_stage_name not in dvc_yaml['stages']:
+    raise RuntimeError(f'DVC stage {dvc_stage_name} not found in {dvc_file}')
+
+# Make output directories
+for out in dvc_yaml['stages'][dvc_stage_name]['outs']:
+    os.makedirs(out)
+EOF
+
+"$@" 2>&1 | tee output/dvc_stage_out.log

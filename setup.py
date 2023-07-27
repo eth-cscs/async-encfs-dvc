@@ -26,6 +26,7 @@ setup(
     include_package_data=True,
     scripts=[
         'async_encfs_dvc/dvc_init_repo',
+        'async_encfs_dvc/dvc_cmd',
         'async_encfs_dvc/encfs_int/encfs_launch',
         'async_encfs_dvc/encfs_int/encfs_mount_and_run',
         'async_encfs_dvc/slurm_int/slurm_enqueue.sh',

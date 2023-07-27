@@ -252,7 +252,7 @@ if [[ "${run_stage}" == "YES" ]]; then
 
     # Clean up of any left-overs from previous run, put into sbatch_dvc_stage.sh as well (in case of requeue)
     for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage
-        ls -I stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc stage add --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
+        ls -I dvc_stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc stage add --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
         mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit to succeed
     done
     
