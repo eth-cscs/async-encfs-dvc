@@ -2,52 +2,55 @@
 
 app:
   name: &app_name app_ml/ml_dataset_v1/model_name_v2  # apps should always be versioned, dataset can be absorbed into model in case of redundancy
+  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_ml"  # or /src/app if container_engine != none
+
+  # # container options
   # container_engine: none # can be none, docker or sarus (container_data only takes effect for the latter two)
   # container_opts:
-    # --gpus: # GPU-support for docker
-    # --mpi:  # required when using MPI inside Sarus containers
+  #   --gpus: # GPU-support for docker
+  #   --mpi:  # required when using MPI inside Sarus containers
   # image: load/async-encfs-dvc/app_ml # container image to use (only takes effect if container_engine != none)
-  # absolute path or "\\$(git rev-parse --show-toplevel)/..." with container_engine == none
-  code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_ml"  # /src/app
+
+  # defaults for MPI, can be overriden in merged mappings
+  mpi_defaults: &mpi_defaults
+    mpi_exec: mpiexec  # can be used to override default mpiexec if needed
 
   stages: # app-specific stages
-    inference:
-      type: ml_inference_stage # refers to included stage definition
-      input_inference: # parameterizes stage
-        name: &inference_input_app_name in/ml_dataset_v1/inference/app_prep_v1
-        stage: &inference_input_app_stage auto
-      # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 1
-      script: [*code_root, inference.sh]
-      # for script inference.sh (activates venv and forwards options to inference.py)
-      # (note that these options are not processed w.r.t. dvc_root_host)
-      extra_command_line_options:
-        # --opt: val
-
     training:
       type: ml_training_stage
-      input_training: # parameterizes training data dep
-        name: &training_input_app_name in/ml_dataset_v1/training/app_prep_v1
-        stage: &training_input_app_stage manual  # should be overwritable from CLI
-      input_test: # parameterizes test data dep
-        name: &test_input_app_name in/ml_dataset_v1/test/app_prep_v1
-        stage: &test_input_app_stage auto  # should be overwritable from CLI
-      # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
-      script: [*code_root, training.sh]
-      # for script training.sh (activates venv and forwards options to training.py)
-      # (note that these options are not processed w.r.t. dvc_root_host)
-      extra_command_line_options:
+      script: [*code_root, training.sh]  # main executable launched on each MPI rank
+      input_training: # parameterizes training data dep in stage policy via YAML anchors
+        name: &input_training_app_name in/ml_dataset_v1/training/app_prep_v1
+        stage: &input_training_app_stage manual  # should be overwritable from CLI
+      input_test: # parameterizes test data dep in stage policy via YAML anchors
+        name: &input_test_app_name in/ml_dataset_v1/test/app_prep_v1
+        stage: &input_test_app_stage auto  # should be overwritable from CLI
+      extra_command_line_options:  # for script (not processed w.r.t. dvc_root_host)
         # --opt: val
 
+      # set mpi_exec (optionally) and mpi_opts to run with MPI
+      <<: *mpi_defaults
+      mpi_opts:
+        -np: 2
 
-container_data:  # takes only effect if container_engine is not 'none'
-  mount:  # absolute path in container (mount target for data - either plain or encfs)
-    data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host
+    inference:
+      type: ml_inference_stage # refers to included stage definition
+      script: [*code_root, inference.sh]
+      input_inference: # parameterizes inference data dep in stage policy via YAML anchors
+        name: &input_inference_app_name in/ml_dataset_v1/inference/app_prep_v1
+        stage: &input_inference_app_stage auto
+      extra_command_line_options:  # for script (not processed w.r.t. dvc_root_host)
+        # --opt: val
+
+      # set mpi_exec (optionally) and mpi_opts to run with MPI
+      <<: *mpi_defaults
+      mpi_opts:  # could also override this item if defined in mpi_defaults 
+        -np: 1
+
+
+# container_data:  # takes only effect if container_engine is not 'none'
+#   mount:  # absolute path in container (mount target for data - either plain or encfs)
+#     data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host
 
 
 # include dvc-root/mounts and stage type information (paths relative to DVC root)

@@ -7,13 +7,13 @@
 etl_stage:
   input:  # input data dependencies
     etl:
-      stage_data: &input_etl_data [in, *etl_input_data, original, "{{input_etl or ''}}"]
+      stage_data: &input_etl [in, *input_etl_data, original, "{{input_etl or ''}}"]
       command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
-        --etl-input: [*input_etl_data, "{{input_etl_file}}"]
+        --etl-input: [*input_etl, "{{input_etl_file}}"]
 
   output:  # output data
     etl:
-      stage_data: &output_etl [in, *etl_input_data, *app_name, *stage_name, "{{run_label}}", output]
+      stage_data: &output_etl [in, *input_etl_data, *app_name, *stage_name, "{{run_label}}", output]
       command_line_options:  # for etl.sh, which sets up container environment and ends with "exec python3 etl.py $@"
         --etl-output: *output_etl
 

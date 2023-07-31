@@ -4,82 +4,74 @@ app:
   name: &app_name ex_vit/cifar10/baseline_model  # apps should always be versioned, dataset can be absorbed into model in case of redundancy
   code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/ex_vit"  # /src/app
 
+  # defaults for SLURM, can be overriden in merged mappings
+  slurm_defaults: &slurm_defaults
+    # environment configuration in sbatch script before srun (only stage supported)
+    stage_env: |
+      module load daint-gpu
+      module load PyTorch
+      export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+      # Environment variables needed by the NCCL backend for distributed training
+      export NCCL_DEBUG=INFO
+      export NCCL_IB_HCA=ipogif0
+      export NCCL_IB_CUDA_SUPPORT=1
+    dvc:  # sbatch options
+      --cpus-per-task: 24
+      --constraint: mc
+      --time: '4:00:00'
+    all:  # sbatch options
+      --account: csstaff
+
   stages: # app-specific stages
     config:
       type: config_stage
-      output_config:
-        config_group: &config_group_name "{{ config_group }}"
-      frozen: True
       script: "true"
-
-    inference:
-      type: ml_inference_stage # refers to included stage definition
-      input_inference: # parameterizes stage
-        name: &inference_input_app_name in/cifar10
-        stage: &inference_input_app_stage original
-      # run with SLURM
-      slurm_opts:
-        # environment configuration in sbatch script before srun (only stage supported)
-        stage_env: |
-          module load daint-gpu
-          module load PyTorch
-          export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-        # sbatch options
-        stage:
-          --nodes: 1
-          --ntasks: 1
-          --cpus-per-task: 12
-          --constraint: gpu
-          --time: '12:00:00'
-        dvc:
-          --cpus-per-task: 24
-          --constraint: mc
-          --time: '4:00:00'
-        all:
-          --account: csstaff
-      script: [*code_root, inference.py]
-      extra_command_line_options:
-        --dry-run: ''
-        # --no-cuda: ''
+      frozen: True
+      output_config:
+        config_group: &output_config_group "{{ config_group }}"
 
     training:
       type: ml_training_stage
+      script: [*code_root, training.py]
       input_training: # parameterizes training data dep
-        name: &training_input_app_name in/cifar10
-        stage: &training_input_app_stage original
+        name: &input_training_app_name in/cifar10
+        stage: &input_training_app_stage original
       input_test: # parameterizes test data dep
-        name: &test_input_app_name in/cifar10
-        stage: &test_input_app_stage original
-      # run with SLURM
-      slurm_opts:
-        # environment configuration in sbatch script before srun (only stage supported)
-        stage_env: |
-          module load daint-gpu
-          module load PyTorch
-          export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+        name: &input_test_app_name in/cifar10
+        stage: &input_test_app_stage original
+      extra_command_line_options:
+        --dist: ~
+        --dry-run: ~
+        # --no-cuda: ~
 
-          # Environment variables needed by the NCCL backend for distributed training
-          export NCCL_DEBUG=INFO
-          export NCCL_IB_HCA=ipogif0
-          export NCCL_IB_CUDA_SUPPORT=1
-        # sbatch options
-        stage:
+      slurm_opts:  # run with SLURM
+        <<: *slurm_defaults
+        stage:  # sbatch options
           --nodes: 4
           --ntasks: 4
           --cpus-per-task: 12
           --constraint: gpu
           --time: '12:00:00'
-        dvc:
-          --cpus-per-task: 24
-          --constraint: mc
-          --time: '4:00:00'
-        all:
-          --account: csstaff
-      script: [*code_root, training.py]
+
+    inference:
+      type: ml_inference_stage # refers to included stage definition
+      script: [*code_root, inference.py]
+      input_inference: # parameterizes stage
+        name: &input_inference_app_name in/cifar10
+        stage: &input_inference_app_stage original
       extra_command_line_options:
-        --dist: ''
-        --dry-run: ''
-        # --no-cuda: ''
+        --dry-run: ~
+        # --no-cuda: ~
+
+      slurm_opts:  # run with SLURM
+        <<: *slurm_defaults
+        stage:  # sbatch options
+          --nodes: 1
+          --ntasks: 1
+          --cpus-per-task: 12
+          --constraint: gpu
+          --time: '4:00:00'
 
 
 # include dvc-root/mounts and stage type information (paths relative to DVC root)

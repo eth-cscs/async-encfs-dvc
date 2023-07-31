@@ -9,7 +9,7 @@ ml_inference_stage:  # stage_data is relative to mount data point
         --training-output: [*input_trained_model, "{{input_training_file or ''}}"]
 
     inference:  # inference sample/batch
-      stage_data: &input_inference [*inference_input_app_name, *inference_input_app_stage, "{{input_inference}}", output]
+      stage_data: &input_inference [*input_inference_app_name, *input_inference_app_stage, "{{input_inference}}", output]
       command_line_options:
         --inference-input: [ *input_inference, "{{input_inference_file or ''}}" ]
 

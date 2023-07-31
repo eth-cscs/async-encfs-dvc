@@ -8,9 +8,9 @@ The **key features** extending DVC include
 * container support: DVC stages can be run with the Docker and [Sarus](https://github.com/eth-cscs/sarus) engines such that code dependencies are tracked via Git-SHA-tagged container images, making stages fully re-executable
 * infrastructure-as-code practice: DVC repository and stage structure can be encoded into reusable YAML policies, enabling different users to generate DVC stages that comply to the same workflow organization
 
-These capabilities extend, rather than modify, DVC and can largely be used independently. The repository includes three demo applications as surrogates for workflow stages - [app_ml](app_ml) for a machine learning application, [app_sim](app_sim) for a simulation and [app_prep](app_prep) for a preprocessing step that is performed manually or automated. Each of them is accompanied by a corresponding app policy that references repository and stage policies, all of which can be customized inside a DVC repository to reflect evolving requirements. A scientific workflow may also include custom application protocols. These could be defined in an additional package (e.g. another folder on the same level als `app_...`) and imported by the participating applications. It is important to note that DVC does not have a concept for application protocols, but only tracks dependencies between files.
+These capabilities extend, rather than modify, DVC and can largely be used independently. The repository includes three demo applications as surrogates for workflow stages - [app_ml](examples/app_ml) for a machine learning application, [app_sim](examples/app_sim) for a simulation and [app_prep](examples/app_prep) for a preprocessing step that is performed manually or automated. Each of them is accompanied by a corresponding app policy that references repository and stage policies, all of which can be customized inside a DVC repository to reflect evolving requirements. This design facilitates a clean separation of data-related configuration from application logic in code. A scientific workflow may also include custom application protocols. These could be defined in an additional package (e.g. another folder on the same level als `app_...`) and imported by the participating applications. It is important to note that DVC does not have a concept for application protocols, but only tracks dependencies between files. Finally, the repository also contains a full example in [ex_vit](examples/ex_vit) which demonstrates the use of the package in distributed training and inference with a deep learning model.
 
-The next sections cover the [installation](#installation) and [usage](#usage) of the tool. Specifically, the latter introduces a series of tutorial notebooks that exemplify various use cases. For further details on usage and implementation, please consult the [dedicated documentation](usage_details.md). Finally, an overview on performance on Piz Daint and [Castor](https://castor.cscs.ch)'s object storage is attached in the [performance report](#performance-on-piz-daint-and-castor).
+The next sections cover the [installation](#installation) and [usage](#usage) of the tool. Specifically, the latter introduces a series of tutorial notebooks that exemplify various use cases. For further details on usage and implementation, please consult the [dedicated documentation](docs/usage_details.md). Finally, an overview on performance on Piz Daint and [Castor](https://castor.cscs.ch)'s object storage is attached in the [performance report](#performance-on-piz-daint-and-castor).
 
 # Installation
 
@@ -29,10 +29,11 @@ A set of notebooks illustrating the usage of individual features is available in
 * a DVC workflow with asynchronous stages in SLURM and Sarus containers is available in the [SLURM tutorial](examples/slurm_async_sim_tutorial.ipynb)
 * a PyTorch deep learning application that integrates the above concepts to run distributed training and inference with a [vision transfomer](examples/vit_example.ipynb) model on encrypted data using SLURM
 
-For a step-by-step guide on setting up a DVC repository to track workflow results, (optionally) using encryption and [Castor](https://castor.cscs.ch)'s object storage as a remote, please refer to the [setup guide](setup_guide.md).
+For a step-by-step guide on setting up a DVC repository to track workflow results, (optionally) using encryption and [Castor](https://castor.cscs.ch)'s object storage as a remote, please refer to the [setup guide](docs/setup_guide.md). For details on available commands, consult the [command reference](docs/command_reference.md).
+
+### Test suite
 
 The project also includes a test suite that can be run with `tox`. If EncFS and SLURM are not installed locally, use `tox -e py39-default` to only run tests without these requirements. In contrast, to run only EncFS-tests, execute `tox -e py39-encfs` and to run only the SLURM-tests use `tox -e py39-slurm`. 
-
 
 # Performance on Piz Daint and Castor
 

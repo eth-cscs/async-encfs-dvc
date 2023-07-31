@@ -2,50 +2,44 @@
 
 app:
   name: &app_name app_prep_v1
-  container_engine: none  # if using docker/sarus for automated stages, create another version of this file
   code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_prep"
 
   # examples for manual and automated ETL stages
   # (the assignment of manual to train, auto to test/inf/sim is chosen arbitrarily)
   stages:
-    manual_train:  # preprocessing step run manually outside of DVC
-                   # (frozen DVC stage, when completed update output with 'dvc commit <stage-name>)
+    # preprocessing step run manually outside of DVC
+    # (frozen DVC stage, when completed update output with 'dvc commit <stage-name>)
+    manual_train:
       type: etl_stage
-      # frozen is specific to manual stage: protects outputs from being deleted/overwritten by dvc repro
-      frozen: True
+      script: "true"  # script is never run (commandline params are not checked, but should reflect manual processing)
+      frozen: True  # specific to manual stage: protects outputs from being deleted/overwritten by dvc repro
       name: &stage_name manual
       input_data: # parameterizes stage
-        name: &etl_input_data ml_dataset_v1/training  # replace ml_dataset with the name of a specific dataset
-      # mpi_opts/slurm_opts not used as stage never run
-      # script is never run (commandline params are not checked, but should be used in manual execution)
-      script: "true"
+        name: &input_etl_data ml_dataset_v1/training
 
     auto_test:  # an automated (standard) DVC stage
       type: etl_stage
+      script: [*code_root, prep.sh]  # the automated ETL step
       frozen: False
       name: &stage_name auto
       input_data:
-        name: &etl_input_data ml_dataset_v1/test
-      # mpi_opts/slurm_opts can go here
-      script: [*code_root, prep.sh]  # the automated ETL step
+        name: &input_etl_data ml_dataset_v1/test
 
     auto_inf:
       type: etl_stage
+      script: [*code_root, prep.sh]
       frozen: False
       name: &stage_name auto
       input_data:
-        name: &etl_input_data ml_dataset_v1/inference
-      # mpi_opts/slurm_opts can go here
-      script: [*code_root, prep.sh]
+        name: &input_etl_data ml_dataset_v1/inference
 
     sim:
       type: etl_stage
+      script: [*code_root, prep.sh]
       frozen: False
       name: &stage_name auto
       input_data:
-        name: &etl_input_data sim_dataset_v1
-      # mpi_opts/slurm_opts can go here
-      script: [*code_root, prep.sh]
+        name: &input_etl_data sim_dataset_v1
 
 # include dvc-root/mounts and stage type information (paths relative to DVC root)
 include:

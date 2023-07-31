@@ -2,56 +2,51 @@
 
 app:
   name: &app_name app_sim_v1/sim_dataset_v1  # apps should always be versioned
-  # container_engine can be none, docker or sarus (container_data only takes effect for the latter two)
-  container_engine: docker
+
+  # container options
+  container_engine: docker  # can be none, docker or sarus (container_data only takes effect if != none)
 #  container_opts:
 #    --gpus: # GPU-support for docker
 #    --mpi:  # required when using MPI inside Sarus containers
   image: load/async-encfs-dvc/app_sim  # container image to use (only takes effect if container_engine != none)
-  # absolute path or "\\$(git rev-parse --show-toplevel)/..." with container_engine == none
+  # absolute path or (typically) "\\$(git rev-parse --show-toplevel)/..." with container_engine == none
   code_root: &code_root /src/app
+
+  # defaults for MPI, can be overriden in merged mappings
+  mpi_defaults: &mpi_defaults
+    mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+    mpi_opts:
+      -np: 2
 
   stages: # app-specific stages
     base_simulation:
       type: simulation_stage # refers to included stage definition
-      input_simulation: # parameterizes stage
-        name: &simulation_input_app_name in/sim_dataset_v1/app_prep_v1
-        stage: &simulation_input_app_stage auto
-      # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
-      # use the following to run with SLURM
-      # slurm_opts:
-      #   ...
       script: [*code_root, simulation.sh]
-      # for script simulation.sh
-      # (note that these options are not processed w.r.t. dvc_root_host)
-      extra_command_line_options:
+      input_simulation: # parameterizes stage
+        name: &input_simulation_app_name in/sim_dataset_v1/app_prep_v1
+        stage: &input_simulation_app_stage auto
+      extra_command_line_options:  # for script (not processed w.r.t. dvc_root_host)
         --simulation-output-file-num-per-rank: "{{ simulation_output_file_num_per_rank }}"
         --simulation-output-file-size: "{{ simulation_output_file_size }}"
+
+      # set mpi_exec (optionally) and mpi_opts to run with MPI
+      <<: *mpi_defaults
 
     simulation:
       type: simulation_stage # refers to included stage definition
-      input_simulation: # parameterizes stage
-        name: &simulation_input_app_name app_sim_v1/sim_dataset_v1
-        stage: &simulation_input_app_stage simulation
-      # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
-      # use the following to run with SLURM
-      # slurm_opts:
-      #   ...
       script: [*code_root, simulation.sh]
-      # for script simulation.sh
-      # (note that these options are not processed w.r.t. dvc_root_host)
-      extra_command_line_options:
+      input_simulation: # parameterizes stage
+        name: &input_simulation_app_name app_sim_v1/sim_dataset_v1
+        stage: &input_simulation_app_stage simulation
+      extra_command_line_options:  # for script (not processed w.r.t. dvc_root_host)
         --simulation-output-file-num-per-rank: "{{ simulation_output_file_num_per_rank }}"
         --simulation-output-file-size: "{{ simulation_output_file_size }}"
 
+      # set mpi_exec (optionally) and mpi_opts to run with MPI
+      <<: *mpi_defaults
 
-container_data:  # takes only effect if container_engine is not 'none'
+
+container_data:  # takes only effect if app.container_engine is not 'none'
   mount:  # absolute path in container (mount target for data - either plain or encfs)
     data: &mount_data_container /app-data  # can be combined with *mount_data_host or *dvc_root_host
 

@@ -1,47 +1,41 @@
-# app_sim version 1 description for DVC stage generation
+# app_sim version 1 app policy for DVC stage generation
 
 app:
   name: &app_name app_sim_v1/sim_dataset_v1  # apps should always be versioned
   code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/app_sim"
 
+  # defaults for MPI, can be overriden in merged mappings
+  mpi_defaults: &mpi_defaults
+    mpi_exec: mpiexec  # can be used to override default mpiexec if needed
+    mpi_opts:
+      -np: 2
+
   stages: # app-specific stages
     base_simulation:
-      type: simulation_stage # refers to included stage definition
-      input_simulation: # parameterizes stage
-        name: &simulation_input_app_name in/sim_dataset_v1/app_prep_v1
-        stage: &simulation_input_app_stage auto
-      # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
-      # use the following to run with SLURM
-      # slurm_opts:
-      #   ...
+      type: simulation_stage  # refers to included stage definition
       script: [*code_root, simulation.sh]
-      # for script simulation.sh
-      # (note that these options are not processed w.r.t. dvc_root_host)
-      extra_command_line_options:
+      input_simulation:  # parameterizes stage
+        name: &input_simulation_app_name in/sim_dataset_v1/app_prep_v1
+        stage: &input_simulation_app_stage auto
+      extra_command_line_options:  # for script (not processed w.r.t. dvc_root_host)
         --simulation-output-file-num-per-rank: "{{ simulation_output_file_num_per_rank }}"
         --simulation-output-file-size: "{{ simulation_output_file_size }}"
 
+      # set mpi_exec (optionally) and mpi_opts to run with MPI
+      <<: *mpi_defaults
+
     simulation:
       type: simulation_stage # refers to included stage definition
-      input_simulation: # parameterizes stage
-        name: &simulation_input_app_name app_sim_v1/sim_dataset_v1
-        stage: &simulation_input_app_stage simulation
-      # use the following to run with MPI
-      mpi_exec: mpiexec  # can be used to override default mpiexec if needed
-      mpi_opts:
-        -np: 2
-      # use the following to run with SLURM
-      # slurm_opts:
-      #   ...
       script: [*code_root, simulation.sh]
-      # for script simulation.sh
-      # (note that these options are not processed w.r.t. dvc_root_host)
-      extra_command_line_options:
+      input_simulation: # parameterizes stage
+        name: &input_simulation_app_name app_sim_v1/sim_dataset_v1
+        stage: &input_simulation_app_stage simulation
+      extra_command_line_options:  # for script (not processed w.r.t. dvc_root_host)
         --simulation-output-file-num-per-rank: "{{ simulation_output_file_num_per_rank }}"
         --simulation-output-file-size: "{{ simulation_output_file_size }}"
+
+      # set mpi_exec (optionally) and mpi_opts to run with MPI
+      <<: *mpi_defaults
 
 
 # include dvc-root/mounts and stage type information

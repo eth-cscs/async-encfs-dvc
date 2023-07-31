@@ -8,11 +8,11 @@ app:
     # (creates a frozen DVC stage, when completed update output with 'dvc commit <stage-name>')
     add:
       type: in_stage
+      script: "true"
+      frozen: True
       output_add:
         dataset: &output_dataset_name "{{ dataset_name }}"
         subset: &output_subset_name "{{ subset_name }}"
-      frozen: True
-      script: "true"
 
 # include dvc-root/mounts and stage type information (paths relative to DVC root)
 include:

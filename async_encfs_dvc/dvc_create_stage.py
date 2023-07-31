@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-"""Generate DVC stage from a parameterized app-definition in YAML that is instantiated with commandline arguments.
+"""Generate DVC stage from a parameterized app-policy in YAML that is instantiated with commandline arguments.
 
 Two different ways of launching this:
 - first instantiate dvc_app.yaml (use '--show-opts' for completion suggestions), then generate DVC stage
-- directly generate DVC stage from a preprocessed dvc_app.yaml
+- directly generate DVC stage from instantiated dvc_app.yaml
 
 Based on dvc_app.yaml this script generates a DVC stage by running the equivalent of
 ```
   dvc stage add --name <stage-name> --deps <host-input-directory> \
-      --outs(-persist) <host-output-directory>/output ... (<slurm-command>/<container-image>/<encfs-command>)
+      --outs(-persist) <host-output-directory>/output ... (<slurm-command>/<container-command>/<encfs-command>)
 ```
 The execution can then later be done with 'dvc repro <stage-name>' (use '--no-commit' with SLURM, and
 upon successful completion 'dvc commit').
@@ -42,6 +42,71 @@ def dvc_root():
     return dvc_root_sp.stdout.decode().strip('\n')
 
 
+def filter_yaml_parse_events(events, keys):
+    """Get YAML subsection (keys: list of mapping keys)"""
+
+    assert len(keys) > 0
+    assert isinstance(events, list)
+
+    keys.insert(0, None)
+    arg_key = keys[-1]
+    arg_stack = keys[:-1]
+
+    last_key = None
+    stack = []
+    inside_section = False
+    section_events = []
+
+    stack_structure = []
+    stack_next_scalar_is_mapping_key = []
+
+    for i, e in enumerate(events):
+        if inside_section:
+            section_events.append(e)
+
+        if isinstance(e, yaml.SequenceStartEvent) or \
+            isinstance(e, yaml.MappingStartEvent):
+            stack.append(last_key)
+            if len(stack_structure) > 0 and isinstance(stack_structure[-1], yaml.MappingStartEvent):
+                stack_next_scalar_is_mapping_key[-1] = not stack_next_scalar_is_mapping_key[-1]
+
+            stack_structure.append(e)
+            stack_next_scalar_is_mapping_key.append(isinstance(e, yaml.MappingStartEvent))  # sequences in keys not supported
+
+        elif isinstance(e, yaml.SequenceEndEvent) or \
+            isinstance(e, yaml.MappingEndEvent):
+            last_key = stack.pop()
+            stack_structure.pop()
+            stack_next_scalar_is_mapping_key.pop()
+
+            if stack == arg_stack and last_key == arg_key:
+                inside_section = False
+
+        elif isinstance(e, yaml.ScalarEvent):
+            if stack_next_scalar_is_mapping_key[-1]:  # only match in mappings, not sequences
+                last_key = e.value
+
+                if stack == arg_stack and last_key == arg_key:
+                    index = i+1
+                    next_event = events[index]
+                    while isinstance(next_event, yaml.AliasEvent):
+                        index += 1
+                        next_event = events[index]
+
+                    if isinstance(next_event, yaml.ScalarEvent):  # assuming to be in a mapping
+                        section_events.append(next_event)  # only key-value pair
+                    else:
+                        inside_section = True  # nested data structure
+            
+            if isinstance(stack_structure[-1], yaml.MappingStartEvent):
+                stack_next_scalar_is_mapping_key[-1] = not stack_next_scalar_is_mapping_key[-1]
+
+    return events[:2] + section_events + events[-2:]
+
+
+def filter_and_load_yaml_parse_events(events, keys):
+    return yaml.load(yaml.emit(filter_yaml_parse_events(events, keys)), Loader=yaml.FullLoader)
+
 # 1. step: generate dvc_app.yaml by merging with includes and move to dvc_dir
 def make_full_app_yaml(app_yaml_file, stage, default_run_label):
     """Parse dvc_app.yaml and assemble full app-yaml using include references"""
@@ -59,11 +124,13 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
                            "for temporarily storing full yaml".format(tmp_full_app_yaml_file))
 
     with open(app_yaml_file, 'r') as f:
-        app_yaml_str = f.read()\
-                        .replace('*', '')\
-                        .replace('&', '')  # avoid YAML load failure due to unresolved anchors
-        app_yaml = yaml.load(app_yaml_str, Loader=yaml.FullLoader)
 
+        # parse YAML sections to assemble full document (loading will fail due to unresolved anchors)
+        events = list(yaml.parse(f.read()))
+        app_yaml_stage_type = filter_and_load_yaml_parse_events(events, ['app', 'stages', stage, 'type'])
+        app_yaml_includes = filter_and_load_yaml_parse_events(events, ['include'])
+
+        # Alternative implementation might use yaml.parse events and find lines to skip
         f.seek(0)
         yaml_nodes = []
         full_app_yaml_lines = []
@@ -113,7 +180,7 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
                 # skip unnecessary includes
                 elif len(yaml_nodes) == 2 and yaml_nodes[:1] == ['include'] and \
                         not(yaml_nodes[1].startswith('dvc_') or
-                            yaml_nodes[1] == app_yaml['app']['stages'][stage]['type']):
+                            yaml_nodes[1] == app_yaml_stage_type):
                     line = f.readline()
                     _, indent, is_comment = parse_yaml_line(line)
                     while is_comment or indent >= 2 * len(yaml_nodes):
@@ -126,16 +193,10 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
     with open(tmp_full_app_yaml_file, 'w') as f:
         f.writelines(full_app_yaml_lines)
 
-    with open(tmp_full_app_yaml_file, 'r') as f:
-        app_yaml_str = f.read().replace('*', '')  # to avoid YAML load failure due to unresolved anchors
-        app_yaml = yaml.load(app_yaml_str, Loader=yaml.FullLoader)
-
-    # Previous version without YAML parsing
-    append_to_app_yaml_cmd = f" && ".join(
-        [f"echo \"\"  >> {tmp_full_app_yaml_file} && "
-         f"cat {os.path.join(dvc_root_rel_to_app_yaml, app_yaml_include)} >> {tmp_full_app_yaml_file}"
-         for app_yaml_include in app_yaml['include'].values()])
-    sp.run(append_to_app_yaml_cmd, shell=True, check=True)
+        for app_yaml_include in [app_yaml_includes['dvc_root'],
+                                 app_yaml_includes[app_yaml_stage_type]]:
+            with open(os.path.join(dvc_root_rel_to_app_yaml, app_yaml_include), 'r') as policy:
+                f.write('\n' + policy.read())
 
     tmp_full_app_yaml_file = os.path.abspath(tmp_full_app_yaml_file)
     os.chdir(cwd)
@@ -356,7 +417,7 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, stage, default_
             stage_option_completions[stage_arg] = dict(search_path=glob_search_path, candidates=stage_option_candidates)
 
         if len(stage_option_completions) > 0:
-            print(f"### Completion options for stage arguments to dvc_create_stage ##")
+            print(f"### Completion options for stage arguments to dvc_create_stage ###")
             for stage_arg, completions in stage_option_completions.items():
                 completions_str = '\n  '.join(completions['candidates'])
                 print(f"Options for --{stage_arg.replace('_','-')} "
@@ -542,7 +603,13 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     def get_expanded_options(opts, expand_paths, sep=" "):
         """Flatten values of YAML options dict and return as string"""
         expanded_options = [(opt, get_expanded_path(vals) if expand_paths else vals) for (opt, vals) in opts.items()]
-        return " ".join(f"{opt}{sep}{val}" for opt, val in expanded_options)
+        expanded_options_cmd = []
+        for opt, val in expanded_options:
+            if val is not None:
+                expanded_options_cmd.append(f"{opt}{sep}{val}")
+            else:
+                expanded_options_cmd.append(opt)
+        return " ".join(expanded_options_cmd)
 
     stage_command_line_options = dict()
     for data_flow in ['input', 'output']:
@@ -599,8 +666,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     # optionally freeze stage (manually executed stages, etc.)
     if full_app_yaml['app']['stages'][args.stage].get('frozen', False):
         print(f"Freezing stage for execution outside dvc - run 'dvc commit {stage_name}' when outputs are done.")
-        sp.run(f"dvc freeze {stage_name} ",
-               shell=True, check=True)
+        sp.run(f"dvc freeze {stage_name} ", shell=True, check=True)
 
 
 def main():

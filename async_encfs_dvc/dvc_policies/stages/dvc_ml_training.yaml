@@ -1,16 +1,17 @@
-# A generic ML-training stage
+# A generic ML training stage
 # All values are interpreted as paths relative to the host/container data (encfs) mount point
+# Exercise: implement stage policy for continuing training from a saved checkpoint by adding 
+# another input depedency on saved model (this trains from scratch) 
 
-# TODO: stage for continuing training from a saved checkpoint (this trains from scratch)
 ml_training_stage:  # stage_data is relative to mount data point
   input:  # input data dependencies
     training:  # training data
-      stage_data: &input_training_data [*training_input_app_name, *training_input_app_stage, "{{input_training}}", output]
+      stage_data: &input_training_data [*input_training_app_name, *input_training_app_stage, "{{input_training}}", output]
       command_line_options:  # for script
         --training-input: [*input_training_data, "{{input_training_file or ''}}"]
 
     test:  # test data
-      stage_data: &input_test_data [*test_input_app_name, *test_input_app_stage, "{{input_test}}", output]
+      stage_data: &input_test_data [*input_test_app_name, *input_test_app_stage, "{{input_test}}", output]
       command_line_options:
         --test-input: [*input_test_data, "{{input_test_file or ''}}"]
 

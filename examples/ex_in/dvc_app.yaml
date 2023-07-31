@@ -4,32 +4,36 @@ app:
   name: &app_name in_original
   code_root: &code_root "\\$(git rev-parse --show-toplevel)/examples/ex_in"
 
+  # defaults for SLURM, can be overriden in merged mappings
+  slurm_defaults: &slurm_defaults
+    # environment configuration in sbatch script before srun (only stage supported)
+    stage_env: |
+      module load daint-gpu
+      module load PyTorch
+      export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+    dvc:  # sbatch options
+      --cpus-per-task: 24
+      --constraint: mc
+      --time: '4:00:00'
+    all:  # sbatch options
+      --account: csstaff
+
   stages:
     fetch_cifar10:
       type: in_stage
+      script: [*code_root, fetch_cifar10.py]
       output_fetch_cifar10:
         dataset: &output_dataset_name cifar10
         subset: &output_subset_name '.'
-      # run with SLURM
-      slurm_opts:
-        # environment configuration in sbatch script before srun (only stage supported)
-        stage_env: |
-          module load daint-gpu
-          module load PyTorch
-        # sbatch options
-        stage:
+
+      slurm_opts:  # run with SLURM
+        <<: *slurm_defaults
+        stage:  # sbatch options
           --nodes: 1
           --ntasks: 1
           --cpus-per-task: 12
           --constraint: gpu
           --time: '4:00:00'
-        dvc:
-          --cpus-per-task: 24
-          --constraint: mc
-          --time: '4:00:00'
-        all:
-          --account: csstaff
-      script: [*code_root, fetch_cifar10.py]
 
 
 include:

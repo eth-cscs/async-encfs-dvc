@@ -6,7 +6,7 @@ config_stage:
   # no data dependencies
   output:  # output data
     config:
-      stage_data: &output_config [*app_name, config, *config_group_name, output]
+      stage_data: &output_config [*app_name, config, *output_config_group, output]
       command_line_options:
         --config-output: *output_config
 
