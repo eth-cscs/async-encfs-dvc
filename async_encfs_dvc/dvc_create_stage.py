@@ -55,6 +55,7 @@ def filter_yaml_parse_events(events, keys):
     last_key = None
     stack = []
     inside_section = False
+    section_key = None
     section_events = []
 
     stack_structure = []
@@ -87,6 +88,7 @@ def filter_yaml_parse_events(events, keys):
                 last_key = e.value
 
                 if stack == arg_stack and last_key == arg_key:
+                    section_key = e
                     index = i+1
                     next_event = events[index]
                     while isinstance(next_event, yaml.AliasEvent):
@@ -101,11 +103,47 @@ def filter_yaml_parse_events(events, keys):
             if isinstance(stack_structure[-1], yaml.MappingStartEvent):
                 stack_next_scalar_is_mapping_key[-1] = not stack_next_scalar_is_mapping_key[-1]
 
-    return events[:2] + section_events + events[-2:]
+    return section_key, section_events
 
 
 def filter_and_load_yaml_parse_events(events, keys):
-    return yaml.load(yaml.emit(filter_yaml_parse_events(events, keys)), Loader=yaml.FullLoader)
+    _, filtered_events = filter_yaml_parse_events(events, keys)
+    return yaml.load(yaml.emit(events[:2] + filtered_events + events[-2:]), Loader=yaml.FullLoader)
+
+
+def isspace_or_empty(string):
+    return len(string) == 0 or string.isspace()
+
+
+def find_parent_excluding_children_from_yaml_parse_events(events, parent_keys, children_keys_to_keep):
+    if len(events) == 0:
+        return []
+
+    lines = events[0].start_mark.buffer.split('\n')
+
+    _, parent_events = filter_yaml_parse_events(events, parent_keys)
+    parent_start_line = parent_events[0].start_mark.line
+    parent_end_line = parent_events[-1].end_mark.line
+    if not isspace_or_empty(lines[parent_events[-1].end_mark.line][parent_events[-1].end_mark.column:]):
+        parent_end_line -= 1
+
+    children_events = sorted([filter_yaml_parse_events(events[:2] + parent_events + events[-2:], [child_key_to_keep])
+                              for child_key_to_keep in children_keys_to_keep],
+                             key=lambda evs: evs[0].start_mark.pointer)
+
+    intervals = [parent_start_line]
+    for child_key_event, child_value_events in children_events:
+        child_before_start_line = child_key_event.start_mark.line - 1
+        child_past_end_line = child_value_events[-1].end_mark.line
+        if not isspace_or_empty(lines[child_value_events[-1].end_mark.line][:child_value_events[-1].end_mark.column]):
+            child_past_end_line += 1
+
+        intervals.append(child_before_start_line)
+        intervals.append(child_past_end_line)
+    intervals.append(parent_end_line)
+
+    return [(intervals[2*i], intervals[2*i + 1]) for i in range(len(intervals)//2)]
+
 
 # 1. step: generate dvc_app.yaml by merging with includes and move to dvc_dir
 def make_full_app_yaml(app_yaml_file, stage, default_run_label):
@@ -130,68 +168,23 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
         app_yaml_stage_type = filter_and_load_yaml_parse_events(events, ['app', 'stages', stage, 'type'])
         app_yaml_includes = filter_and_load_yaml_parse_events(events, ['include'])
 
-        # Alternative implementation might use yaml.parse events and find lines to skip
+        # find stage lines to delete
+        stage_lines_to_filter = find_parent_excluding_children_from_yaml_parse_events(events, ['app', 'stages'], [stage])
+
+        # find include lines to delete
+        include_lines_to_filter = find_parent_excluding_children_from_yaml_parse_events(events, ['include'], ['dvc_root', app_yaml_stage_type])
+
+        lines_to_filter = sorted(stage_lines_to_filter + include_lines_to_filter)
+
         f.seek(0)
-        yaml_nodes = []
-        full_app_yaml_lines = []
-
-        def parse_yaml_line(line):  # FIXME: handle multiline > |
-            line_stripped = line.lstrip(' ')
-            return line_stripped, len(line) - len(line_stripped), line_stripped.startswith('#') or line_stripped == '\n'
-
-        line = f.readline()
-        while line != "":
-            line_stripped, indent, is_comment = parse_yaml_line(line)
-            if is_comment:
-                full_app_yaml_lines.append(line)
-                line = f.readline()
-            elif line_stripped.startswith('- '):  # node is a list item
-                assert indent == 2 * len(yaml_nodes)  # is a nested node
-                while is_comment or indent >= 2 * len(yaml_nodes):  # ...don't recurse into lists, just copy them
-                    full_app_yaml_lines.append(line)
-                    line = f.readline()
-                    _, indent, is_comment = parse_yaml_line(line)
-            else:  # is a dict
-                node_name = None
-                for pattern in [r"^([\w-]+):", r"^\"(.+)\":", r"^\'(.+)\':"]:
-                    match = re.search(pattern, line_stripped)
-                    if match is not None:
-                        node_name = match.group(1)
-                        break
-                if node_name is None:
-                    raise RuntimeError("Could not read dict name in YAML line " + line)
-
-                if indent == 2 * len(yaml_nodes):  # nested node
-                    yaml_nodes.append(node_name)
-                else:
-                    yaml_nodes = yaml_nodes[:indent//2]
-                    yaml_nodes.append(node_name)
-                # skip unnecessary stages
-                if len(yaml_nodes) == 3 and yaml_nodes[:2] == ['app', 'stages']:
-                    if yaml_nodes[2] == stage:
-                        full_app_yaml_lines.append(line)
-                    line = f.readline()
-                    _, indent, is_comment = parse_yaml_line(line)
-                    while is_comment or indent >= 2 * len(yaml_nodes):
-                        if yaml_nodes[2] == stage:
-                            full_app_yaml_lines.append(line)
-                        line = f.readline()
-                        _, indent, is_comment = parse_yaml_line(line)
-                # skip unnecessary includes
-                elif len(yaml_nodes) == 2 and yaml_nodes[:1] == ['include'] and \
-                        not(yaml_nodes[1].startswith('dvc_') or
-                            yaml_nodes[1] == app_yaml_stage_type):
-                    line = f.readline()
-                    _, indent, is_comment = parse_yaml_line(line)
-                    while is_comment or indent >= 2 * len(yaml_nodes):
-                        line = f.readline()
-                        _, indent, is_comment = parse_yaml_line(line)
-                else:
-                    full_app_yaml_lines.append(line)
-                    line = f.readline()
+        app_yaml_lines = f.readlines()
+        filtered_app_yaml_lines = app_yaml_lines[0:lines_to_filter[0][0]]
+        for prev_lines_to_filter, next_lines_to_filter in zip(lines_to_filter[:-1], lines_to_filter[1:]):
+            filtered_app_yaml_lines += app_yaml_lines[prev_lines_to_filter[1]+1:next_lines_to_filter[0]]
+        filtered_app_yaml_lines += app_yaml_lines[lines_to_filter[-1][1]+1:]
 
     with open(tmp_full_app_yaml_file, 'w') as f:
-        f.writelines(full_app_yaml_lines)
+        f.writelines(filtered_app_yaml_lines)
 
         for app_yaml_include in [app_yaml_includes['dvc_root'],
                                  app_yaml_includes[app_yaml_stage_type]]:
