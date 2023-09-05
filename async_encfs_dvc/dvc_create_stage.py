@@ -174,14 +174,19 @@ def make_full_app_yaml(app_yaml_file, stage, default_run_label):
         # find include lines to delete
         include_lines_to_filter = find_parent_excluding_children_from_yaml_parse_events(events, ['include'], ['dvc_root', app_yaml_stage_type])
 
-        lines_to_filter = sorted(stage_lines_to_filter + include_lines_to_filter)
+        lines_to_filter = sorted(filter(lambda interval: interval[0] <= interval[1],
+                                        stage_lines_to_filter + include_lines_to_filter))
 
         f.seek(0)
         app_yaml_lines = f.readlines()
-        filtered_app_yaml_lines = app_yaml_lines[0:lines_to_filter[0][0]]
-        for prev_lines_to_filter, next_lines_to_filter in zip(lines_to_filter[:-1], lines_to_filter[1:]):
-            filtered_app_yaml_lines += app_yaml_lines[prev_lines_to_filter[1]+1:next_lines_to_filter[0]]
-        filtered_app_yaml_lines += app_yaml_lines[lines_to_filter[-1][1]+1:]
+
+        if len(lines_to_filter) == 0:
+            filtered_app_yaml_lines = app_yaml_lines
+        else:
+            filtered_app_yaml_lines = app_yaml_lines[0:lines_to_filter[0][0]]
+            for prev_lines_to_filter, next_lines_to_filter in zip(lines_to_filter[:-1], lines_to_filter[1:]):
+                filtered_app_yaml_lines += app_yaml_lines[prev_lines_to_filter[1]+1:next_lines_to_filter[0]]
+            filtered_app_yaml_lines += app_yaml_lines[lines_to_filter[-1][1]+1:]
 
     with open(tmp_full_app_yaml_file, 'w') as f:
         f.writelines(filtered_app_yaml_lines)
