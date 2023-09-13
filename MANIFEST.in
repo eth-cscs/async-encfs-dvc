@@ -8,6 +8,7 @@ include async_encfs_dvc/dvc_policies/stages/dvc_ml_inference.yaml
 include async_encfs_dvc/dvc_policies/stages/dvc_simulation.yaml
 include async_encfs_dvc/openstack/cli/castor-cli-otp.env
 include async_encfs_dvc/openstack/cli/castor.env
+include async_encfs_dvc/encfs_int/mount_config.py
 include async_encfs_dvc/encfs_int/slurm_get_local_ntasks.py
 include async_encfs_dvc/encfs_int/slurm_step_get_local_ntasks.py
 include async_encfs_dvc/slurm_int/dvc_get_stage_deps.py

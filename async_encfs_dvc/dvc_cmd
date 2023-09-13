@@ -30,7 +30,13 @@ if dvc_stage_name not in dvc_yaml['stages']:
 
 # Make output directories
 for out in dvc_yaml['stages'][dvc_stage_name]['outs']:
-    os.makedirs(out)
+    if isinstance(out, dict):
+        for out_dir in out:
+            os.makedirs(out_dir)
+    elif isinstance(out, str):
+        os.makedirs(out)
+    else:
+        raise RuntimeError("dvc_cmd: Error parsing 'outs'")
 EOF
 
 "$@" 2>&1 | tee output/dvc_stage_out.log

@@ -2,51 +2,81 @@
 
 set -euo pipefail
 
+SCRIPT_NAME="$(basename "$0")"
+
+log () {
+    echo "${SCRIPT_NAME}: $1"
+}
+
+log_error () {
+    log "$1"
+    exit 1
+}
+
 # Provide DVC root directory as an argument
 if [ "$#" -ne 2 ]; then
-    echo "Provide the root directory of the new DVC repository as the first and the repo policy (either plain or encfs) as the second argument."
-    exit 1
+    log_error "Provide the root directory of the new DVC repository as the first and the repo policy (either plain or encfs) as the second argument."
 fi
 
 if [ ! -d "$1" ]; then
-    echo "The first argument must be the root directory of the new DVC repository."
-    exit 1
+    log_error "The first argument must be the root directory of the new DVC repository."
 fi
 
 if [ "$2" != "plain" ] && [ "$2" != "encfs" ]; then
-    echo "The second argument must be the repo policy (either plain or encfs)."
-    exit 1
+    log_error "The second argument must be the repo policy (either plain or encfs)."
 fi
 
 # Use pushd to change to the new DVC root directory and add it to the stack
 pushd "$1" >/dev/null
 
+log "Initializing DVC repo at $(pwd)"
+
 # Initialize DVC repo
 dvc init --subdir --verbose
 dvc config core.analytics false
 
+log "Initializing DVC repo ($2) and stage policies."
+
 # Initialize repo and stage policies
-ASYNC_ENCFS_DVC_PATH="$(python -c 'import async_encfs_dvc, os; print(os.path.dirname(async_encfs_dvc.__file__))')"
+ASYNC_ENCFS_DVC_INSTALL_PATH="$(python -c 'import async_encfs_dvc, os; print(os.path.dirname(async_encfs_dvc.__file__))')"
 
 # Copy repo policy
 mkdir -p .dvc_policies/repo
 
 if [ "$2" == "plain" ]; then
-    cp ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/repos/dvc_root_plain.yaml .dvc_policies/repo/ && \
+    cp "${ASYNC_ENCFS_DVC_INSTALL_PATH}"/dvc_policies/repos/dvc_root_plain.yaml .dvc_policies/repo/ && \
   mv .dvc_policies/repo/dvc_root{_plain,}.yaml 
 fi
 
 if [ "$2" == "encfs" ]; then
-    mkdir encrypt decrypt config
-    cp ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/repos/dvc_root_encfs.yaml .dvc_policies/repo/ && \
+    cp "${ASYNC_ENCFS_DVC_INSTALL_PATH}"/dvc_policies/repos/dvc_root_encfs.yaml .dvc_policies/repo/ && \
  mv .dvc_policies/repo/dvc_root{_encfs,}.yaml
+
+    # analogous to encfs_int/encfs_launch
+    encfs_dirs=()
+    while IFS= read -r line; do
+        encfs_dirs+=("${line}")
+    done <<< "$(python3 -m async_encfs_dvc.encfs_int.mount_config .dvc_policies/repo/dvc_root.yaml)"
+
+    if [[ ${#encfs_dirs[@]} -ne 2 ]]; then
+        log_error "Error: Found faulty encfs config with dirs ${encfs_dirs[*]}."
+    fi
+
+    dvc_encrypt_dir="$(eval echo "${encfs_dirs[0]}")"
+    dvc_decrypt_dir="$(eval echo "${encfs_dirs[1]}")"
+    mkdir -p "${dvc_encrypt_dir}" "${dvc_decrypt_dir}" config
+
+    log "Created directories for EncFS and DVC metadata:"
+    log "  EncFS encrypt:  ${dvc_encrypt_dir}"
+    log "  EncFS decrypt:  ${dvc_decrypt_dir}"
+    log "  DVC metadata:   config"
 fi
 
 # Copy stage policies and track them with Git
-cp -r ${ASYNC_ENCFS_DVC_PATH}/dvc_policies/stages .dvc_policies/
+cp -r "${ASYNC_ENCFS_DVC_INSTALL_PATH}"/dvc_policies/stages .dvc_policies/
 
 git add .dvc_policies
 
 popd >/dev/null
 
-echo "Initialized DVC repo ($2) and stage policies."
+log "Initialization of $2 DVC repo complete"

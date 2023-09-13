@@ -31,7 +31,7 @@ log_error () {
 
 # use path where user installed encfs
 if [ -x "$(command -v encfs)" ]; then
-    ENCFS_BIN=encfs
+    ENCFS_BIN="$(command -v encfs)"
 elif [ -d "${APPS}/UES/anfink/encfs" ]; then
     ENCFS_BIN="${APPS}/UES/anfink/encfs/bin/encfs"
 elif [ -f "${ENCFS_INSTALL_DIR}/bin/encfs" ]; then

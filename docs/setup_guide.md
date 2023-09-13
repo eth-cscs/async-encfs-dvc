@@ -61,6 +61,7 @@ Now, go to https://castor.cscs.ch and create an object storage container on unde
 ```shell
 dvc remote add --default --verbose castor s3://<name-of-your-castor-bucket>
 dvc remote modify --verbose castor endpointurl https://object.cscs.ch
+dvc remote modify --verbose castor acl authenticated-read
 dvc remote modify --verbose castor profile <aws-profile-name>
 ```
 according to the CSCS user documentation on [object storage](https://user.cscs.ch/storage/object_storage/) and the [boto client](https://user.cscs.ch/storage/object_storage/usage_examples/boto/). The third command is necessary if the newly created AWS credentials have been put under an `<aws-profile-name>` above that is not `default`.
