@@ -3,7 +3,7 @@
 #SBATCH --output=output/dvc_sbatch.%x.%j.out
 #SBATCH --error=output/dvc_sbatch.%x.%j.err
 
-# to be run with dvc stage add/repro --no-commit! (the first SLURM job runs the actual workload, the second one commits it to DVC)
+# to be run with dvc stage add/repro --no-commit --no-lock! (the first SLURM job runs the actual workload, the second one commits it to DVC)
 
 set -euo pipefail
 
@@ -32,7 +32,7 @@ EOF
 
     for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage
         ls -I dvc_stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc stage add --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
-        mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit to succeed
+        mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit --no-lock to succeed
     done
 fi
 

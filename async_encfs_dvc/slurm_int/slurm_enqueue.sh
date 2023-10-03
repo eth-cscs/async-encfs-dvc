@@ -5,7 +5,7 @@ set -euo pipefail
 # A dvc stage with this script should be created with
 #   dvc stage add --name <stage-name> --desc ... --deps ... --outs-persist ... --no-exec $(dvc root)/dvc_run_sbatch.ch <stage-name> command
 # where command is bash -c "..." (... can include pipes, I/O redirection, etc.) and run with
-#   dvc repro --no-commit <stage-name>
+#   dvc repro --no-commit --no-lock <stage-name>
 
 # Set to 1 for debugging
 SLURM_ENQUEUE_DEBUGGING=0
@@ -253,7 +253,7 @@ if [[ "${run_stage}" == "YES" ]]; then
     # Clean up of any left-overs from previous run, put into sbatch_dvc_stage.sh as well (in case of requeue)
     for out in "${dvc_stage_outs[@]}"; do # coordinate outs-persist-handling with dvc_create_stage
         ls -I dvc_stage_out.log  "${out}" | xargs -I {} rm -r "${out}"/{} || true # correct dvc stage add --outs-persist behavior (used to avoid accidentally deleting files of completed, but not committed stages), requires mkdir -p <out_1> <out_2> ... in command
-        mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit to succeed
+        mkdir -p "${out}" # output deps must be avaiable (as dirs) upon submission for dvc repro --no-commit --no-lock to succeed
     done
     
     # Remove status/commit/cleanup logs from previous execution

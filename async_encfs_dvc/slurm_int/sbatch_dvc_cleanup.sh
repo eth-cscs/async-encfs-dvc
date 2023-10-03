@@ -4,7 +4,7 @@
 #SBATCH --error=dvc_sbatch.%x.%j.err
 
 # Depends on unsuccessful execution of corresponding DVC stage, which
-# is to be run with dvc repro --no-commit as a preceding SLURM job.
+# is to be run with dvc repro --no-commit --no-lock as a preceding SLURM job.
 
 set -euxo pipefail
 

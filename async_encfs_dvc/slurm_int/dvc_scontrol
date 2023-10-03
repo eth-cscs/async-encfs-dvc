@@ -144,7 +144,7 @@ fi
 # Parse list of DVC job types
 dvc_job_type="$2"
 if [ "${dvc_job_type}" == "all" ]; then
-    dvc_job_type="stage,commit,push,cleanup"
+    dvc_job_type="stage,commit,cleanup,push"
 fi
 
 IFS=',' read -ra dvc_job_type_list <<<"${dvc_job_type}"

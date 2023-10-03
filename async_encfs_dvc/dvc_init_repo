@@ -33,6 +33,7 @@ log "Initializing DVC repo at $(pwd)"
 
 # Initialize DVC repo
 dvc init --subdir --verbose
+dvc config core.autostage true
 dvc config core.analytics false
 
 log "Initializing DVC repo ($2) and stage policies."
@@ -76,6 +77,19 @@ fi
 cp -r "${ASYNC_ENCFS_DVC_INSTALL_PATH}"/dvc_policies/stages .dvc_policies/
 
 git add .dvc_policies
+
+#FIXME: double-check these
+cat <<'EOL' > .gitignore
+dvc_sbatch.dvc_commit.*.out
+dvc_sbatch.dvc_commit.*.err
+*.dvc_stage_jobid
+*.dvc_commit_jobid
+*.dvc_cleanup_jobid
+sbatch_dvc_stage_*.sh
+slurm_enqueue_dvc_push_*.sh
+EOL
+
+git add .gitignore
 
 popd >/dev/null
 

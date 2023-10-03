@@ -2,16 +2,16 @@
 
 # Model parameters
 patch_size: 16           # patch size for images
-latent_size: 768         # latent size
-n_channels: 3            # number of channels in images (3 for RGB)
-num_heads: 12            # number of heads
-num_encoders: 12         # number of encoders
-dropout: 0.1             # dropout value
+latent_size: 768
+n_channels: 3            # RGB
+num_heads: 12
+num_encoders: 12
+dropout: 0.1
 img_size: 224            # image size to be reshaped to
-num_classes: 16          # number of classes in dataset (10 for CIFAR10)
+num_classes: 16          # number of classes in dataset
 
 # Training configuration
-epochs: 10               # number of epochs
+epochs: 10               # number of training epochs
 lr: 0.01                 # base learning rate
-weight_decay: 0.03       # weight decay value
-global_batch_size: 4     # batch size
+weight_decay: 0.03       # weight decay for Adam
+global_batch_size: 4

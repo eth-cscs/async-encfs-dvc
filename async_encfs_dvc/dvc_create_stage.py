@@ -11,7 +11,7 @@ Based on dvc_app.yaml this script generates a DVC stage by running the equivalen
   dvc stage add --name <stage-name> --deps <host-input-directory> \
       --outs(-persist) <host-output-directory>/output ... (<slurm-command>/<container-command>/<encfs-command>)
 ```
-The execution can then later be done with 'dvc repro <stage-name>' (use '--no-commit' with SLURM, and
+The execution can then later be done with 'dvc repro <stage-name>' (use '--no-commit --no-lock' with SLURM, and
 upon successful completion 'dvc commit').
 """
 
@@ -28,6 +28,7 @@ import glob
 import shutil
 import yaml
 from jinja2 import Environment, BaseLoader, meta, StrictUndefined
+from dvc.repo import Repo
 import async_encfs_dvc
 
 
@@ -463,7 +464,8 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     # Working directory of dvc stage add (e.g. <output_dep>/.. in ML stages), move rendered dvc_app.yaml there
     dvc_dir = get_validated_path([full_app_yaml['host_data']['dvc_config']] + stage_def['dvc'], is_input=False)
     os.makedirs(dvc_dir)
-    shutil.move(full_app_yaml_file, os.path.join(dvc_dir, os.path.basename(args.app_yaml)))
+    full_app_yaml_basename = os.path.basename(args.app_yaml)
+    shutil.move(full_app_yaml_file, os.path.join(dvc_dir, full_app_yaml_basename))
 
     # Accumulate dvc stage add command, starting with host (-> encfs) -> container (runtime) mount mappings
     mounts = dict()
@@ -580,7 +582,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     using_slurm = 'slurm_opts' in full_app_yaml['app']['stages'][args.stage]
     if using_slurm:
         # Submits DVC stage and commit jobs that complete asynchronously, hence always use
-        #   dvc repro --no-commit <stage-name>
+        #   dvc repro --no-commit --no-lock <stage-name>
         # to execute this stage. Checks all data dependencies to be ready beforehand and will
         # not submit if SLURM stage job already running/about to be committed.
         container_command = f"slurm_enqueue.sh " \
@@ -650,7 +652,7 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     print(f"Writing DVC stage to {os.path.relpath(os.getcwd(), host_dvc_root)}")
     if using_encfs:
         print(f"Using encfs - don't forget to set ENCFS_PW_FILE/ENCFS_INSTALL_DIR when running "
-              f"\'dvc repro{' --no-commit' if using_slurm else ''}\'.")
+              f"\'dvc repro{' --no-commit --no-lock' if using_slurm else ''}\'.")
 
     stage_create_command = os.path.relpath(sys.argv[0], git_root) + ' ' + ' '.join(sys.argv[1:])
     sp.run(f"dvc stage add --name {stage_name} "
@@ -663,8 +665,13 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
 
     # optionally freeze stage (manually executed stages, etc.)
     if full_app_yaml['app']['stages'][args.stage].get('frozen', False):
-        print(f"Freezing stage for execution outside dvc - run 'dvc commit {stage_name}' when outputs are done.")
+        print(f"Freezing stage for execution outside of DVC - run 'dvc commit {stage_name}' when outputs are done.")
         sp.run(f"dvc freeze {stage_name} ", shell=True, check=True)
+
+    # if autostage is true add instantiated YAML to git
+    if Repo().config['core']['autostage']:
+       print(f"Staging `{full_app_yaml_basename}` for commit in Git.")
+       sp.run(f"git add {full_app_yaml_basename}", shell=True, check=True)
 
 
 def main():

@@ -3,7 +3,7 @@
 #SBATCH --output=dvc_sbatch.dvc_push.%j.out
 #SBATCH --error=dvc_sbatch.dvc_push.%j.err
 
-# Depends on successful execution and commit of corresponding DVC stage, which is to be run with dvc stage add/repro --no-commit as a preceding SLURM job.
+# Depends on successful execution and commit of corresponding DVC stage, which is to be run with dvc stage add/repro --no-commit --no-lock as a preceding SLURM job.
 
 set -euxo pipefail
 

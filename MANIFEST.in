@@ -1,3 +1,4 @@
+include async_encfs_dvc/__init__.py
 include async_encfs_dvc/dvc_policies/repos/dvc_root_plain.yaml
 include async_encfs_dvc/dvc_policies/repos/dvc_root_encfs.yaml
 include async_encfs_dvc/dvc_policies/stages/dvc_in.yaml

@@ -9,5 +9,5 @@ host_data:
       origin: encrypt
       default_target: &mount_data_host decrypt  # make sure this is a dvc-repo-specific path if it is absolute
       custom_target:  # machine-specific
-        - machine: ['daint[\d]+', 'nid[\d]+']
+        - machine: ['daint[\d]+', 'nid[\d]+'] # TODO: Alps
           target: /tmp/encfs_$(id -u)_async_encfs_dvc  # make sure this is a dvc-repo-specific path if using multiple encfs-repos
