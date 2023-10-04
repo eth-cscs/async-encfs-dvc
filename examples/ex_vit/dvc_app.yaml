@@ -26,10 +26,12 @@ app:
   stages: # app-specific stages
     config:
       type: config_stage
-      script: "true"
-      frozen: True
+      script: [*code_root, copy_config.sh]
       output_config:
         config_group: &output_config_group "{{ config_group }}"
+      extra_command_line_options:
+        --source: [*code_root, "{{ config_file or 'config.yaml' }}"]
+
 
     training:
       type: ml_training_stage

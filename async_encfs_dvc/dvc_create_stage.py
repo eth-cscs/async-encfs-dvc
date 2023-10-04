@@ -219,7 +219,7 @@ def load_full_app_yaml(filename, load_orig_dvc_root=False):
                                       os.path.relpath(dvc_root(), yaml_file_dir),
                                       os.path.dirname(full_app_yaml['include']['dvc_root']),
                                       full_app_yaml['host_data']['dvc_root']))
-    return full_app_yaml, full_app_yaml['host_data']['dvc_root']
+    return full_app_yaml, os.path.normpath(full_app_yaml['host_data']['dvc_root'])
 
 
 env = Environment(loader=BaseLoader())
@@ -351,8 +351,9 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, stage, default_
     args = parser.parse_args()
 
     if args.show_opts:  # do not substitute params, but show completion options
+
         # Only show options for command completion, don't generate stage actually (could be put in different module)
-        def get_stage_args_dependencies(stage_args):
+        def get_stage_args_dependencies(stage_args):  # returns mapping of stage args a -> b, where a is used in subset of keys b is used in
             stage_args_top_order = {k: set() for k in stage_args}
             stage_args_list = list(stage_args.keys())
             for stage_arg_1_ind, stage_arg_1 in enumerate(stage_args_list):
@@ -369,13 +370,13 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, stage, default_
         fixed_args = {k: v for k, v in vars(args).items() if v is not None}
         stage_args_top_order = get_stage_args_dependencies(stage_args)
 
-        for k in stage_args:
+        for k in stage_args:  # remove fixed args from dependency graph
             if k in fixed_args:
                 for other_k in stage_args_top_order:
-                    if other_k != k:
-                        stage_args_top_order[other_k].discard(k)
-                    else:
+                    if other_k == k:
                         stage_args_top_order[other_k] = set()
+                    else:
+                        stage_args_top_order[other_k].discard(k)
 
         stage_option_completions = dict()
         for stage_arg, occurrences in stage_args.items():
@@ -388,39 +389,53 @@ def parse_stage_args_and_substitute(full_app_yaml_template_file, stage, default_
             # May need to use encfs-mount resolution here in the future
             data_mount = full_app_yaml['host_data']['mount']['data']['origin']
 
-            occ_joined_paths = [os.path.relpath(os.path.join(data_mount, *[os.path.join(*el)
-                                                                           if isinstance(el, list)
-                                                                           else el for el in occ['value']]), '.')
-                                for occ in occurrences]
+            occ_joined_paths = sorted([os.path.relpath(os.path.join(data_mount, *[os.path.join(*el)
+                                                                                  if isinstance(el, list)
+                                                                                  else el for el in occ['value']]), '.')
+                                       for occ in occurrences])
+            
+            occ_joined_paths = [  # only search in least specific paths
+                 occ_path for i, occ_path in enumerate(occ_joined_paths)
+                 if not any(occ_path.startswith(other) for other in occ_joined_paths[:i])
+            ]
 
+            stage_option_candidates = []
+            glob_search_paths = []
             # find common ancestor path, glob path, read with re.search and suggestions
-            occ_joined_glob, occ_joined_regex = \
+            for occ_joined_glob, occ_joined_regex in \
                 sorted([(get_expanded_path_template(occ_path, {k: '*' if k not in fixed_args else fixed_args[k]
                                                                for k in stage_args.keys()}),  # cf. get_expanded_path
                          get_expanded_path_template(occ_path, {k: r'(?P<' + k + r'>[\.\w-]+/?)' if k not in fixed_args
                                                                else fixed_args[k] for k in stage_args.keys()}))
-                        for occ_path in occ_joined_paths], reverse=True)[0]
-            stage_option_candidates = []
+                        for occ_path in occ_joined_paths], reverse=True):
 
-            occ_joined_pattern = re.compile(occ_joined_regex)
-            glob_search_path = os.path.join(host_dvc_root, occ_joined_glob)
-            occ_joined_glob_matches = glob.glob(glob_search_path)
-            occ_joined_glob_matches.sort(key=lambda file: os.path.getmtime(file), reverse=True)
+                stage_option_candidates.append(set())
 
-            for glob_result in occ_joined_glob_matches:
-                glob_result_relative = os.path.relpath(glob_result, host_dvc_root)
-                occ_joined_matches = re.match(occ_joined_pattern, glob_result_relative)
-                if stage_arg in occ_joined_matches.groupdict():
-                    stage_option_candidates.append(occ_joined_matches[stage_arg])
+                occ_joined_pattern = re.compile(occ_joined_regex)
+                glob_search_path = os.path.join(host_dvc_root, occ_joined_glob)
+                glob_search_paths.append(glob_search_path)
+                occ_joined_glob_matches = glob.glob(glob_search_path)
+                occ_joined_glob_matches.sort(key=lambda file: os.path.getmtime(file), reverse=True)
 
-            stage_option_completions[stage_arg] = dict(search_path=glob_search_path, candidates=stage_option_candidates)
+                for glob_result in occ_joined_glob_matches:
+                    glob_result_relative = glob_result.removeprefix(host_dvc_root)[1:]
+                    occ_joined_matches = re.match(occ_joined_pattern, glob_result_relative)
+                    if stage_arg in occ_joined_matches.groupdict():
+                        candidate = occ_joined_matches[stage_arg]
+                        stage_option_candidates[-1].add(candidate)
+
+            stage_option_candidates = set.intersection(*stage_option_candidates)
+
+            stage_option_completions[stage_arg] = dict(search_path=glob_search_paths, candidates=stage_option_candidates)
 
         if len(stage_option_completions) > 0:
             print(f"### Completion options for stage arguments to dvc_create_stage ###")
             for stage_arg, completions in stage_option_completions.items():
+                glob_search_paths_str = ', '.join([p.removeprefix(host_dvc_root)[1:]
+                                                   for p in completions['search_path']])
                 completions_str = '\n  '.join(completions['candidates'])
-                print(f"Options for --{stage_arg.replace('_','-')} "
-                      f"(glob search path {os.path.relpath(completions['search_path'], host_dvc_root)}):\n  " +
+                print(f"Options for `--{stage_arg.replace('_','-')}` "
+                      f"(glob search paths: {glob_search_paths_str}):\n  " +
                       completions_str)
         else:
             print(f"### Stage arguments are complete ##")
@@ -602,7 +617,10 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
     # script commandline options
     def get_expanded_options(opts, expand_paths, sep=" "):
         """Flatten values of YAML options dict and return as string"""
-        expanded_options = [(opt, get_expanded_path(vals) if expand_paths else vals) for (opt, vals) in opts.items()]
+        expanded_options = [(opt,
+                             get_expanded_path(vals) if expand_paths else
+                             (os.path.join(*vals) if isinstance(vals, list) else vals))
+                            for (opt, vals) in opts.items()]
         expanded_options_cmd = []
         for opt, val in expanded_options:
             if val is not None:
@@ -670,8 +688,8 @@ def create_dvc_stage(full_app_yaml_file, args, load_orig_dvc_root):
 
     # if autostage is true add instantiated YAML to git
     if Repo().config['core']['autostage']:
-       print(f"Staging `{full_app_yaml_basename}` for commit in Git.")
        sp.run(f"git add {full_app_yaml_basename}", shell=True, check=True)
+       print(f"Added `{full_app_yaml_basename}` to Git staging area.")
 
 
 def main():

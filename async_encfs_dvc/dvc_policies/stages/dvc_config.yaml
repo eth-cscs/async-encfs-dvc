@@ -3,11 +3,12 @@
 # for the missing --file option of dvc add in newer releases
 
 config_stage:
-  # no data dependencies
+  # no data dependencies tracked with DVC
+
   output:  # output data
     config:
       stage_data: &output_config [*app_name, config, *output_config_group, output]
       command_line_options:
-        --config-output: *output_config
+        --dest: *output_config
 
   dvc: [*output_config, ".."]
