@@ -111,3 +111,13 @@ In this manner, the download overhead of shared dependencies can be avoided (fil
 
 If these techniques do not alleviate the issue with throughput, a draft of running `dvc commit/push` operations `out-of-repo` instead `in-repo` is available (can be activated by exporting `DVC_SLURM_DVC_OP_OUT_OF_REPO=YES`). The intention is to run the computationally expensive part in e.g. `dvc commit` in a separate, temporary DVC repo with all top folders under `$(dvc root)` except `.dvc` as symbolic links to the original repo and then have a short-running process that synchronizes with the main repo. The jobs running on DVC repos outside the main one are then parallelizable. Currently, there is no speedup for `dvc commit`, though, as file hashes are recomputed on every `dvc pull` (i.e. the `cache.db`'s entries are not synchronized by a local `dvc pull`).
 
+# Acknowledgements
+
+We gratefully acknowledge support from
+
+<table>
+   <tr>
+      <td><img src="./docs/pasc_logo.svg" height=50px ></td>
+      <td><a href="https://www.pasc-ch.org/"><strong>PASC</strong></a>: Platform for Advanced Scientific Computing</td>
+  </tr>
+</table>
